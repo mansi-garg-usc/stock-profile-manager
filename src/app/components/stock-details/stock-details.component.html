@@ -1,5 +1,6 @@
 <div *ngIf="stockData">
-    <p>Stock Name: {{ stockData.name }}</p>
-    <p>Stock Symbol: {{ stockData.symbol }}</p>
+    <p>{{stockData.ticker }}</p>
+    <p>{{ stockData.name }}</p>
+    <p>{{ stockData.exchange }}</p>
     <!-- Display more attributes as needed -->
 </div>
