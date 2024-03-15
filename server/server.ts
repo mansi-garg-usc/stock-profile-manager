@@ -1,8 +1,10 @@
+import cors from 'cors';
 import express, { Request, Response } from 'express';
 import path from 'path';
 const axios = require('axios');
 
 const app = express();
+app.use(cors());
 const finnhub_api_key = 'cnih581r01qj1g5q4jlgcnih581r01qj1g5q4jm0';
 const polygon_api_key = 'Veu4EyzzJTduRuvf0Y1woy5mwtn1mMIA';
 const port = 8000;
@@ -10,6 +12,12 @@ const port = 8000;
 app.use(
   express.static(path.join(__dirname, '../dist/stock-portfolio-manager'))
 );
+
+// app.use(
+//   cors({
+//     origin: 'http://localhost:4200', // or your Angular app's domain
+//   })
+// );
 
 app.get('/api', (req, res) => {
   res.json({ message: 'API Response' });

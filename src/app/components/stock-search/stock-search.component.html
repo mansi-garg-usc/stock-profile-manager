@@ -1,0 +1,15 @@
+<div class="search-container">
+    <label for="stockSearch" class="form-label">STOCK SEARCH</label>
+    <div class="input-group">
+        <input type="text" class="form-control" placeholder="Enter stock ticker symbol" aria-label="Stock Search"
+            aria-describedby="button-search" #stockInput>
+        <button class="btn btn-outline-primary" type="button" id="button-search"
+            (click)="searchStock(stockInput.value)">
+            <i class="bi bi-search"></i>
+        </button>
+        <button class="btn btn-outline-secondary" type="button" id="button-clear">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+</div>
+<app-stock-details *ngIf="stockInfo" [stockData]="stockInfo"></app-stock-details>
