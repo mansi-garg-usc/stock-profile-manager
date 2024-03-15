@@ -1,6 +1,20 @@
-<div *ngIf="stockData">
-    <p>{{stockData.ticker }}</p>
-    <p>{{ stockData.name }}</p>
-    <p>{{ stockData.exchange }}</p>
-    <!-- Display more attributes as needed -->
+<div *ngIf="stockData" class="stock-details-layout">
+    <div class="company-info-column">
+        <p>{{stockData.company.ticker }}</p>
+        <p>{{ stockData.company.name }}</p>
+        <p>{{ stockData.company.exchange }}</p>
+    </div>
+
+    <div class="logo-column">
+        <img [src]="stockData.company.logo" alt="Company Logo">
+    </div>
+
+    <!-- Stock Price Column -->
+    <div class="stock-price-column">
+        <p>{{ stockData.price.c }}</p>
+        <p>{{ stockData.price.d }}</p>
+        <p>{{ stockData.price.dp }}</p>
+        <p>{{ stockData.price.t }}</p>
+    </div>
+
 </div>
