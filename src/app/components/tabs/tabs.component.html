@@ -1,7 +1,23 @@
-<!-- </ngb-nav>
-<ngb-nav-item>
-    <a ngbNavLink>First</a>
-    <ng-template ngbNavContent>First content</ng-template>
-</ngb-nav-item>
- More ngb-nav-item elements as needed 
-</ngb-nav> -->
+<mat-tab-group>
+    <mat-tab label="Summary">
+        <ng-template matTabContent>
+            <app-summary></app-summary>
+        </ng-template>
+    </mat-tab>
+    <mat-tab label="Top News">
+        <ng-template matTabContent>
+            <app-top-news></app-top-news>
+        </ng-template>
+    </mat-tab>
+    <mat-tab label="Charts">
+        <ng-template matTabContent>
+            <app-charts></app-charts>
+        </ng-template>
+    </mat-tab>
+    <mat-tab label="Insights">
+        <ng-template matTabContent>
+            <app-insights></app-insights>
+        </ng-template>
+    </mat-tab>
+    ```
+</mat-tab-group>
