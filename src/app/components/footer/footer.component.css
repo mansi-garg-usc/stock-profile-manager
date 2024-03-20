@@ -1,0 +1,12 @@
+.footer {
+  background-color: #e2e3e5;
+  position:fixed;
+  bottom: 0;
+  width:100%
+}
+
+.powered-text {
+  text-align: center;
+  padding: 1% 0;
+  font-weight: bold;
+}

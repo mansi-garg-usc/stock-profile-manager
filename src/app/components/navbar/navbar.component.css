@@ -1,0 +1,62 @@
+.navbar-container {
+  background-color: #19239b;
+  padding: 0 2.5rem;
+  display: flex;
+  align-items: center;
+  height: 3rem;
+  align-items: center;
+}
+
+.navbar-heading {
+  font-size: larger;
+  color: white;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.button {
+  background: transparent;
+  height: 2rem;
+  width: 4rem;
+  color: white;
+  border-radius: 12px;
+  border-color: white;
+}
+
+.hamburger-icon {
+  display: none;
+  color: white;
+  background: transparent;
+  border: none;
+}
+
+.navlist-container {
+  display: none;
+  background-color: #19239b; /* Match navbar background */
+  color: white;
+}
+
+@media (max-width: 600px) {
+  .buttons {
+    display: none;
+  }
+
+  .hamburger-icon {
+    display: block;
+  }
+
+  .navlist-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 5px 2rem;
+  }
+}
