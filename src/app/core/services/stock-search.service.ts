@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { forkJoin, Observable, tap, catchError, map, throwError } from 'rxjs';
+import { forkJoin, Observable, tap, catchError, map, throwError, of } from 'rxjs';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
@@ -19,6 +19,24 @@ export class StockSearchService {
   constructor(private http: HttpClient) {}
 
   private baseUrl = 'http://localhost:8000/api';
+
+  searchAutocomplete(query: string): Observable<string[]> {
+    if (!query.trim()) {
+      return of([]);
+    }
+    return this.http.get<any[]>(`${this.baseUrl}/search`, { params: { searchString: query } })
+      .pipe(
+        map(response => {
+          console.log('Autocomplete Response:', response); // Log the response
+          return response.map(stock => stock.displaySymbol);
+        }),
+        catchError(error => {
+          console.error('Error fetching autocomplete data:', error);
+          return throwError(() => new Error('Error fetching autocomplete data'));
+        })
+      );
+  }
+  
 
   searchStock(stock: string): Observable<any> {
     this.updateStockSymbol(stock);
@@ -46,15 +64,15 @@ export class StockSearchService {
   }
 
   updateSearchResults(results: any) {
-    this.searchResult.next(results);
+    this.searchResult?.next(results);
   }
 
   updateStockSymbol(newSymbol: string) {
-    this.currentStockSymbol.next(newSymbol);
+    this.currentStockSymbol?.next(newSymbol);
   }
   clearSearchResults() {
-    this.searchResult.next(null);
-    this.newsResult.next(null);
+    this.searchResult?.next(null);
+    this.newsResult?.next(null);
   }
 
   // fetchNews(): Observable<any> {
@@ -81,7 +99,7 @@ export class StockSearchService {
   //   return news;
   // }
   fetchNews(): Observable<any> {
-    const stock = this.currentStockSymbol.value;
+    const stock = this.currentStockSymbol?.value;
     if (!stock) {
       throw new Error('Stock symbol is not set');
     }
@@ -103,8 +121,8 @@ export class StockSearchService {
               item.url &&
               item.image
             ) {
-              filteredNews.push(item);
-              if (filteredNews.length === 20) {
+              filteredNews?.push(item);
+              if (filteredNews?.length === 20) {
                 break; // Exit the loop once 20 valid items are found
               }
             }
@@ -114,11 +132,11 @@ export class StockSearchService {
         }),
         tap((filteredNews) => {
           // Update the BehaviorSubject with the filtered news
-          this.newsResult.next(filteredNews);
+          this.newsResult?.next(filteredNews);
         }),
         catchError((error) => {
           console.error('Error fetching news:', error);
-          this.newsResult.next([]); // Clear the news results on error
+          this.newsResult?.next([]); // Clear the news results on error
           return throwError(() => new Error('Error fetching news')); // Re-throw the error for subscribers to handle
         })
       );

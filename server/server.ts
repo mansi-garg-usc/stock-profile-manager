@@ -13,12 +13,6 @@ app.use(
   express.static(path.join(__dirname, '../dist/stock-portfolio-manager'))
 );
 
-// app.use(
-//   cors({
-//     origin: 'http://localhost:4200', // or your Angular app's domain
-//   })
-// );
-
 app.get('/api', (req, res) => {
   res.json({ message: 'API Response' });
 });
@@ -40,9 +34,26 @@ app.get('/api/company', async (req, res) => {
     );
     res.json(finnhubResponse.data);
   } catch (error) {
-    res.status(500).send('Error retrieving stock profile');
+    res.status(500).send(`Error retrieving company profile - ${error}`);
   }
 });
+
+// app.get('/autocomplete', async (req, res) => {
+//   const tickerSymbol = req.query['symbol'] as string;
+//   try {
+//     const finnhubResponse = await axios.get(
+//       `https://finnhub.io/api/v1/search?q=${tickerSymbol.toUpperCase()}`,
+//       {
+//         params: {
+//           token: finnhub_api_key,
+//         },
+//       }
+//     );
+//     res.json(finnhubResponse.data);
+//   } catch (error) {
+//     res.status(500).send(`Error retrieving stock - ${error}`profile');
+//   }
+// });
 
 // Company's latest stock price
 app.get('/api/latestPrice', async (req, res) => {
@@ -58,7 +69,7 @@ app.get('/api/latestPrice', async (req, res) => {
     });
     res.json(finnhubResponse.data);
   } catch (error) {
-    res.status(500).send('Error retrieving stock profile');
+    res.status(500).send(`Error retrieving latest price - ${error}`);
   }
 });
 
@@ -79,7 +90,7 @@ app.get('/api/recommendationTrends', async (req, res) => {
     );
     res.json(finnhubResponse.data);
   } catch (error) {
-    res.status(500).send('Error retrieving stock profile');
+    res.status(500).send(`Error retrieving recommendation trends - ${error}`);
   }
 });
 
@@ -100,7 +111,7 @@ app.get('/api/peers', async (req, res) => {
     );
     res.json(finnhubResponse.data);
   } catch (error) {
-    res.status(500).send('Error retrieving peers');
+    res.status(500).send(`Error retrieving peers - ${error}`);
   }
 });
 
@@ -120,7 +131,7 @@ app.get('/api/earnings', async (req, res) => {
     );
     res.json(finnhubResponse.data);
   } catch (error) {
-    res.status(500).send('Error retrieving earnings');
+    res.status(500).send(`Error retrieving earnings - ${error}`);
   }
 });
 
@@ -142,7 +153,7 @@ app.get('/api/insiderSentiment', async (req, res) => {
     );
     res.json(finnhubResponse.data);
   } catch (error) {
-    res.status(500).send('Error retrieving insider sentiment');
+    res.status(500).send(`Error retrieving insider sentiment - ${error}`);
   }
 });
 
@@ -169,7 +180,7 @@ app.get('/api/news', async (req, res) => {
     );
     res.json(finnhubResponse.data);
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).send(`Error retrieving news - ${error}`);
   }
 });
 
@@ -184,7 +195,7 @@ app.get('/api/highcharts', async (req, res) => {
     const polygonResponse = await axios.get(url);
     res.json(polygonResponse.data);
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).send(`Error retrieving highcharts - ${error}`);
   }
 });
 
@@ -219,9 +230,9 @@ app.get('/api/search', async (req, res) => {
         },
       }
     );
-    res.json(finnhubResponse.data);
+    res.json(finnhubResponse.data.result);
   } catch (error) {
-    res.status(500).send('Error retrieving search results');
+    res.status(500).send(`Error retrieving search results - ${error}`);
   }
 });
 

@@ -1,15 +1,24 @@
-<div class="search-container">
-    <label for="stockSearch" class="form-label">STOCK SEARCH</label>
-    <div class="input-group">
-        <input type="text" class="form-control" placeholder="Enter stock ticker symbol" aria-label="Stock Search"
-            aria-describedby="button-search" #stockInput>
-        <button class="btn btn-outline-primary" type="button" id="button-search"
-            (click)="searchStock(stockInput.value)">
-            <i class="bi bi-search"></i>
-        </button>
-        <button class="btn btn-outline-secondary" type="button" id="button-clear">
-            <i class="bi bi-x-lg"></i>
-        </button>
+<div class="container my-3">
+    <div class="row justify-content-center">
+        <div class="col-sm-12 col-md-8 col-lg-6">
+            <div class="text-center mb-4">
+                <h2>STOCK SEARCH</h2>
+            </div>
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Enter stock ticker symbol" aria-label="Search" [formControl]="stockFormControl" [matAutocomplete]="auto"/>
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="button" (click)="searchStock()">
+                        <i class="fa fa-search"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary" type="button" (click)="clearSearchResults()">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="searchStock($event)">
+                <mat-option *ngFor="let option of filteredOptions | async" [value]="option">{{ option }}</mat-option>
+            </mat-autocomplete>
+        </div>
     </div>
 </div>
 <app-stock-details *ngIf="stockInfo" [stockInfo]="stockInfo"></app-stock-details>

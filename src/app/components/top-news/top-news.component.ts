@@ -22,7 +22,7 @@ export class TopNewsComponent implements OnInit, OnDestroy {
   constructor(private stockSearchService: StockSearchService) {
     this.subscription = this.stockSearchService.exposedNewsResult.subscribe({
       next: (results) => {
-        this.news = results.length > 0 ? results : null;
+        this.news = results?.length > 0 ? results : null;
       },
       error: (error) => console.error('Error fetching news:', error),
     });

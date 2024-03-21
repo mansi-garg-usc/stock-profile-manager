@@ -18,7 +18,7 @@ export class StockDetailsComponent {
   ngOnInit() {
     this.subscription = this.stockSearchService.exposedSearchResult.subscribe({
       next: (results) => {
-        this.stockInfo = results.length > 0 ? results : null;
+        this.stockInfo = results?.length > 0 ? results : null;
       },
       error: (error) =>
         console.error('Error while fetching stock details:', error),

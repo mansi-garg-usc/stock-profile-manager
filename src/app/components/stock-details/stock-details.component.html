@@ -1,20 +1,30 @@
-<div *ngIf="stockInfo" class="stock-details-layout">
-    <div class="company-info-column">
-        <p>{{stockInfo?.company?.ticker }}</p>
-        <p>{{ stockInfo?.company?.name }}</p>
-        <p>{{ stockInfo?.company?.exchange }}</p>
-    </div>
+<div *ngIf="stockInfo" class="container stock-details-layout">
+    <div class="row">
+        <!-- Company Info Column -->
+        <div class="col-12 col-sm-4">
+            <div class="company-info-column">
+                <p>{{stockInfo?.company?.ticker }}</p>
+                <p>{{ stockInfo?.company?.name }}</p>
+                <p>{{ stockInfo?.company?.exchange }}</p>
+            </div>
+        </div>
 
-    <div class="logo-column">
-        <img [src]="stockInfo?.company?.logo" alt="Company Logo">
-    </div>
+        <!-- Logo Column -->
+        <div class="col-12 col-sm-4">
+            <div class="logo-column text-center">
+                <img [src]="stockInfo?.company?.logo" alt="Company Logo" class="img-fluid"
+                    style="max-width: 100%; height: auto;">
+            </div>
+        </div>
 
-    <!-- Stock Price Column -->
-    <div class="stock-price-column">
-        <p>{{ stockInfo?.price?.c }}</p>
-        <p>{{ stockInfo?.price?.d }}</p>
-        <p>{{ stockInfo?.price?.dp }}</p>
-        <p>{{ stockInfo?.price?.t }}</p>
+        <!-- Stock Price Column -->
+        <div class="col-12 col-sm-4">
+            <div class="stock-price-column">
+                <p>{{ stockInfo?.price?.c }}</p>
+                <p>{{ stockInfo?.price?.d }}</p>
+                <p>{{ stockInfo?.price?.dp }}</p>
+                <p>{{ stockInfo?.price?.t }}</p>
+            </div>
+        </div>
     </div>
-
 </div>

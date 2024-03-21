@@ -1,0 +1,61 @@
+.container {
+  margin: auto;
+}
+
+.search-heading {
+  font-size: 24px;
+  margin-bottom: 1rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.input-group {
+  position: relative;
+  border-radius: 20px;
+}
+
+.form-control {
+  border: 2px solid #004a99;
+  border-right: none;
+  border-radius: 20px 0 0 20px;
+  box-shadow: none;
+}
+
+.input-group-append {
+  margin-left: -1px;
+}
+
+.input-group-append .btn {
+  border: 2px solid #004a99;
+  border-left: none;
+  border-radius: 0 20px 20px 0;
+  background-color: transparent;
+  color: #004a99;
+}
+.input-group-append .btn:first-child {
+  border-right: none;
+}
+.input-group-append .btn:last-child {
+  border-radius: 0 20px 20px 0;
+}
+.btn i {
+  font-size: 24px;
+}
+
+.mat-autocomplete-panel {
+  border-radius: 0 0 20px 2;
+  border: 2px solid #004a99;
+}
+
+.mat-option {
+  padding: 10px 20px;
+}
+.input-group .btn {
+  height: calc(2.25rem + 2px);
+  padding: 0 12px;
+}
+
+.input-group .btn:focus {
+  outline: none;
+  box-shadow: none;
+}
