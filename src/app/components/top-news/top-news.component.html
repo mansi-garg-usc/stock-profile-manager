@@ -1,1 +1,34 @@
-<p>top-news works!</p>
+<!-- <div class="news-container">
+    <mat-card *ngFor="let newsItem of news" class="news-card">
+        <mat-card-header>
+            <mat-card-title>{{ newsItem.title }}</mat-card-title>
+            <mat-card-subtitle>{{ newsItem.source }} - {{ newsItem.datetime | date }}</mat-card-subtitle>
+        </mat-card-header>
+        <img mat-card-image [src]="newsItem.image" alt="news image">
+        <mat-card-content>
+            <p>{{ newsItem.summary }}</p>
+        </mat-card-content>
+        <mat-card-actions>
+            <a mat-button href="{{ newsItem.url }}" target="_blank">Read More</a>
+        </mat-card-actions>
+    </mat-card>
+</div> -->
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-6" *ngFor="let newsItem of news">
+            <div class="card m-3 news-card" data-toggle="modal" data-target="#buyportModel">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 image-fit">
+                            <img class="card-img" src="{{ newsItem.image }}" alt="News card" />
+                        </div>
+                        <div class="col">
+                            {{newsItem.headline}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

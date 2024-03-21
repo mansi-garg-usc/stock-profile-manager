@@ -16,7 +16,7 @@ export class StockSearchComponent {
   private subscription: Subscription;
 
   constructor(private stockSearchService: StockSearchService) {
-    this.subscription = this.stockSearchService.latestSearchResult.subscribe({
+    this.subscription = this.stockSearchService.exposedSearchResult.subscribe({
       next: (results) => {
         this.stockInfo =
           results.length > 0

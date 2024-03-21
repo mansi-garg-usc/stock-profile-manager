@@ -16,7 +16,7 @@ export class StockDetailsComponent {
   constructor(private stockSearchService: StockSearchService) {}
 
   ngOnInit() {
-    this.subscription = this.stockSearchService.latestSearchResult.subscribe({
+    this.subscription = this.stockSearchService.exposedSearchResult.subscribe({
       next: (results) => {
         this.stockInfo = results.length > 0 ? results : null;
       },
