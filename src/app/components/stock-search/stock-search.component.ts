@@ -1,4 +1,11 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { FormControl } from '@angular/forms';
 import {
   Observable,
@@ -36,6 +43,7 @@ import { MatCardModule } from '@angular/material/card';
 })
 export class StockSearchComponent implements OnInit, OnDestroy {
   @Input() stockInfo: any;
+  selectedStockSymbol: string = '';
   stockFormControl = new FormControl();
   filteredOptions: Observable<string[]> = of([]);
   private subscription: Subscription = new Subscription();
@@ -53,12 +61,13 @@ export class StockSearchComponent implements OnInit, OnDestroy {
       this.stockSearchService.exposedSearchResult.subscribe({
         next: (results) => {
           this.stockInfo =
-            results?.length > 0
+            results?.hasOwnProperty('companyInfo') > 0
               ? {
-                  company: results.companyInfo,
-                  price: results.stockPriceDetails,
+                  companyInfo: results.companyInfo,
+                  stockPriceDetails: results.stockPriceDetails,
                 }
               : null;
+          console.log('Stock Info in search component:', this.stockInfo);
         },
         error: (error) => console.error('Error fetching stock data:', error),
       })
@@ -68,12 +77,19 @@ export class StockSearchComponent implements OnInit, OnDestroy {
   searchStock(event?: MatAutocompleteSelectedEvent) {
     const stock = event ? event.option.value : this.stockFormControl.value;
     if (!stock) return;
+    this.selectedStockSymbol = stock;
 
     this.stockSearchService.searchStock(stock).subscribe({
       next: (results) => {
         this.stockInfo = {
-          company: results.companyInfo,
-          price: results.stockPriceDetails,
+          companyInfo:
+            results &&
+            results?.hasOwnProperty('companyInfo') &&
+            results.companyInfo,
+          stockPriceDetails:
+            results &&
+            results?.hasOwnProperty('companyInfo') &&
+            results.stockPriceDetails,
         };
       },
       error: (error: any) => {

@@ -28,7 +28,7 @@ export class TabsComponent {
   ngOnInit() {
     this.subscription.add(
       this.stockInfo$.subscribe((stockInfo$) => {
-        console.log('Stock Info:', stockInfo$);
+        console.log('Stock Info in tabs component:', stockInfo$);
       })
     );
   }

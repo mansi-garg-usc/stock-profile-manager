@@ -1,14 +1,23 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { forkJoin, Observable, tap, catchError, map, throwError, of } from 'rxjs';
+import {
+  forkJoin,
+  Observable,
+  tap,
+  catchError,
+  map,
+  throwError,
+  of,
+} from 'rxjs';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class StockSearchService {
+  private updateInterval?: number;
+
   private currentStockSymbol = new BehaviorSubject<string | null>(null);
-  //exposedCurrentStockSymbol = this.currentStockSymbol.asObservable();
 
   private searchResult = new BehaviorSubject<any>([]);
   exposedSearchResult = this.searchResult.asObservable();
@@ -24,19 +33,21 @@ export class StockSearchService {
     if (!query.trim()) {
       return of([]);
     }
-    return this.http.get<any[]>(`${this.baseUrl}/search`, { params: { searchString: query } })
+    return this.http
+      .get<any[]>(`${this.baseUrl}/search`, { params: { searchString: query } })
       .pipe(
-        map(response => {
+        map((response) => {
           console.log('Autocomplete Response:', response); // Log the response
-          return response.map(stock => stock.displaySymbol);
+          return response.map((stock) => stock.displaySymbol);
         }),
-        catchError(error => {
+        catchError((error) => {
           console.error('Error fetching autocomplete data:', error);
-          return throwError(() => new Error('Error fetching autocomplete data'));
+          return throwError(
+            () => new Error('Error fetching autocomplete data')
+          );
         })
       );
   }
-  
 
   searchStock(stock: string): Observable<any> {
     this.updateStockSymbol(stock);
@@ -51,13 +62,13 @@ export class StockSearchService {
     // const news = this.fetchNews(stock);
     result.subscribe({
       next: (response) => {
-        this.updateSearchResults([
-          { company: response.companyInfo, price: response.stockPriceDetails },
-        ]);
+        this.updateSearchResults(
+          { companyInfo: response.companyInfo, stockPriceDetails: response.stockPriceDetails },
+        );
       },
       error: (error) => {
         console.error('Error fetching stock data:', error);
-        this.updateSearchResults([]);
+        this.updateSearchResults({ companyInfo: null, stockPriceDetails: null});
       },
     });
     return result;
@@ -75,29 +86,38 @@ export class StockSearchService {
     this.newsResult?.next(null);
   }
 
-  // fetchNews(): Observable<any> {
-  //   const stock = this.currentStockSymbol.value;
-  //   if (!stock) {
-  //     throw new Error('Stock symbol is not set');
-  //   }
-  //   const news = this.http
-  //     .get(`${this.baseUrl}/news?symbol=${encodeURIComponent(stock)}`)
-  //     .pipe(
-  //       tap((response) => {
-  //         console.log(`news - ${response}`);
-  //         this.updateNewsResults(response);
-  //       }),
-  //       catchError((error) => {
-  //         console.error('Error fetching news:', error);
-  //         this.newsResult.next([]);
-  //         throw error; // Re-throw the error so it can be handled downstream
-  //       })
-  //     );
+  startPeriodicUpdate(stockSymbol: string) {
+    console.log('Starting periodic update for', stockSymbol);
+    // Clear existing interval to avoid multiple intervals running simultaneously
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+    }
 
-  //     console.log(`news2 - ${news}`);
+    // Set up a new interval
+    this.updateInterval = window.setInterval(() => {
+      this.searchStock(stockSymbol).subscribe({
+        next: (response) => {
+          this.updateSearchResults(
+            {
+              companyInfo: response.companyInfo,
+              stockPriceDetails: response.stockPriceDetails,
+            },
+          );
+          console.log('Data updated', response);
+          // Handle the response if needed
+        },
+        error: (error) => console.error('Error updating data:', error),
+      });
+    }, 15000); // 15 seconds interval
+  }
 
-  //   return news;
-  // }
+  stopPeriodicUpdate() {
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+      this.updateInterval = undefined; // Reset the interval reference
+    }
+  }
+
   fetchNews(): Observable<any> {
     const stock = this.currentStockSymbol?.value;
     if (!stock) {

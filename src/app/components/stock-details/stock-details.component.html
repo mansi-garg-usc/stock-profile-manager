@@ -3,16 +3,16 @@
         <!-- Company Info Column -->
         <div class="col-12 col-sm-4">
             <div class="company-info-column">
-                <p>{{stockInfo?.company?.ticker }}</p>
-                <p>{{ stockInfo?.company?.name }}</p>
-                <p>{{ stockInfo?.company?.exchange }}</p>
+                <p>{{stockInfo?.companyInfo?.ticker }}</p>
+                <p>{{ stockInfo?.companyInfo?.name }}</p>
+                <p>{{ stockInfo?.companyInfo?.exchange }}</p>
             </div>
         </div>
 
         <!-- Logo Column -->
         <div class="col-12 col-sm-4">
             <div class="logo-column text-center">
-                <img [src]="stockInfo?.company?.logo" alt="Company Logo" class="img-fluid"
+                <img [src]="stockInfo?.companyInfo?.logo" alt="Company Logo" class="img-fluid"
                     style="max-width: 100%; height: auto;">
             </div>
         </div>
@@ -20,10 +20,10 @@
         <!-- Stock Price Column -->
         <div class="col-12 col-sm-4">
             <div class="stock-price-column">
-                <p>{{ stockInfo?.price?.c }}</p>
-                <p>{{ stockInfo?.price?.d }}</p>
-                <p>{{ stockInfo?.price?.dp }}</p>
-                <p>{{ stockInfo?.price?.t }}</p>
+                <p>{{ stockInfo?.stockPriceDetails?.c }}</p>
+                <p>{{ stockInfo?.stockPriceDetails?.d }}</p>
+                <p>{{ stockInfo?.stockPriceDetails?.dp }}</p>
+                <p>{{ stockInfo?.stockPriceDetails?.t }}</p>
             </div>
         </div>
     </div>

@@ -5,7 +5,8 @@
                 <h2>STOCK SEARCH</h2>
             </div>
             <div class="input-group">
-                <input type="text" class="form-control" placeholder="Enter stock ticker symbol" aria-label="Search" [formControl]="stockFormControl" [matAutocomplete]="auto"/>
+                <input type="text" class="form-control" placeholder="Enter stock ticker symbol" aria-label="Search"
+                    [formControl]="stockFormControl" [matAutocomplete]="auto" />
                 <div class="input-group-append">
                     <button class="btn btn-outline-secondary" type="button" (click)="searchStock()">
                         <i class="fa fa-search"></i>
@@ -21,4 +22,4 @@
         </div>
     </div>
 </div>
-<app-stock-details *ngIf="stockInfo" [stockInfo]="stockInfo"></app-stock-details>
+<app-stock-details *ngIf="stockInfo" [stockInfo]="stockInfo" [stockSymbol]="selectedStockSymbol"></app-stock-details>

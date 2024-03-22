@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription, of } from 'rxjs';
 import { StockSearchService } from '../../core/services/stock-search.service';
 import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
@@ -18,6 +18,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 export class TopNewsComponent implements OnInit, OnDestroy {
   news: NewsItem[] = []; // This type should represent the structure of news data
   private subscription: Subscription = new Subscription();
+  @Input() stockInfo$: Observable<any> = of(null);
 
   constructor(private stockSearchService: StockSearchService) {
     this.subscription = this.stockSearchService.exposedNewsResult.subscribe({
