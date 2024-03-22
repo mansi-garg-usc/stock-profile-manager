@@ -23,12 +23,18 @@ import { Observable, Subscription, of } from 'rxjs';
 })
 export class TabsComponent {
   @Input() stockInfo$: Observable<any> = of(null);
+  @Input() isMarketOpen$: Observable<boolean> = of(false);
   private subscription: Subscription = new Subscription();
 
   ngOnInit() {
     this.subscription.add(
       this.stockInfo$.subscribe((stockInfo$) => {
         console.log('Stock Info in tabs component:', stockInfo$);
+      })
+    );
+    this.subscription.add(
+      this.isMarketOpen$.subscribe((isMarketOpen$) => {
+        console.log('Market Open in tabs component:', isMarketOpen$);
       })
     );
   }

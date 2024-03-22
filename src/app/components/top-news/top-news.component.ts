@@ -19,6 +19,7 @@ export class TopNewsComponent implements OnInit, OnDestroy {
   news: NewsItem[] = []; // This type should represent the structure of news data
   private subscription: Subscription = new Subscription();
   @Input() stockInfo$: Observable<any> = of(null);
+  @Input() isMarketOpen$: Observable<boolean> = of(false);
 
   constructor(private stockSearchService: StockSearchService) {
     this.subscription = this.stockSearchService.exposedNewsResult.subscribe({

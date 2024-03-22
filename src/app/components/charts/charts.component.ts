@@ -10,4 +10,5 @@ import { Observable, of } from 'rxjs';
 })
 export class ChartsComponent {
   @Input() stockInfo$: Observable<any> = of(null);
+  @Input() isMarketOpen$: Observable<boolean> = of(false);
 }
