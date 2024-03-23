@@ -1,30 +1,16 @@
+import { CommonModule } from '@angular/common';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
-import { FormControl } from '@angular/forms';
-import {
-  Observable,
-  startWith,
-  map,
-  Subscription,
-  debounceTime,
-  switchMap,
-  of,
-} from 'rxjs';
+  MatAutocompleteModule,
+  MatAutocompleteSelectedEvent,
+} from '@angular/material/autocomplete';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatInputModule } from '@angular/material/input';
+import { Observable, Subscription, of, startWith, switchMap } from 'rxjs';
 import { StockSearchService } from '../../core/services/stock-search.service';
 import { StockDetailsComponent } from '../stock-details/stock-details.component';
-import { CommonModule } from '@angular/common';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { ReactiveFormsModule } from '@angular/forms';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-stock-search',

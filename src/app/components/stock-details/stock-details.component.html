@@ -3,9 +3,15 @@
         <!-- Company Info Column -->
         <div class="col-12 col-sm-4">
             <div class="company-info-column">
-                <p>{{stockInfo?.companyInfo?.ticker }}</p>
+                <p>{{stockInfo?.companyInfo?.ticker }}<i class="bi"
+                        [ngClass]="{'bi-star': !isFavorite, 'bi-star-fill text-warning': isFavorite}"
+                        (click)="toggleFavorite()"></i></p>
                 <p>{{ stockInfo?.companyInfo?.name }}</p>
                 <p>{{ stockInfo?.companyInfo?.exchange }}</p>
+                <div class="d-grid gap-2 d-sm-block">
+                    <button class="btn btn-success" type="button" (click)="openBuyModal()">Buy</button>
+                    <button class="btn btn-danger" type="button" (click)="openSellModal()">Sell</button>
+                </div>
             </div>
         </div>
 
@@ -13,17 +19,22 @@
         <div class="col-12 col-sm-4">
             <div class="logo-column text-center">
                 <img [src]="stockInfo?.companyInfo?.logo" alt="Company Logo" class="img-fluid"
-                    style="max-width: 100%; height: auto;">
+                    style="width: 30%; height: 30%;">
+                <p [ngClass]="{'text-green': !isMarketOpen$, 'text-red': isMarketOpen$}">{{ marketStatusString }}</p>
             </div>
         </div>
 
         <!-- Stock Price Column -->
         <div class="col-12 col-sm-4">
             <div class="stock-price-column">
-                <p>{{ stockInfo?.stockPriceDetails?.c }}</p>
-                <p>{{ stockInfo?.stockPriceDetails?.d }}</p>
-                <p>{{ stockInfo?.stockPriceDetails?.dp }}</p>
-                <p>{{ stockInfo?.stockPriceDetails?.t }}</p>
+                <p [ngClass]="{'text-green': direction, 'text-red': !direction}">{{ stockInfo?.stockPriceDetails?.c }}
+                </p>
+
+                <p [ngClass]="{'text-green': direction, 'text-red': !direction}">
+                    <i class="bi" [ngClass]="{'bi-caret-up-fill': direction, 'bi-caret-down-fill': !direction}"></i>
+                    {{ stockInfo?.stockPriceDetails?.d }} {{ changePercentage }}
+                </p>
+                <p>{{ dateTimestamp}}</p>
             </div>
         </div>
     </div>

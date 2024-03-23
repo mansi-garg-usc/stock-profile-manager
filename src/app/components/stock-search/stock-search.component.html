@@ -4,9 +4,10 @@
             <div class="text-center mb-4">
                 <h2>STOCK SEARCH</h2>
             </div>
-            <div class="input-group">
+            <div class="input-group" matAutocompleteOrigin #origin="matAutocompleteOrigin">
                 <input type="text" class="form-control" placeholder="Enter stock ticker symbol" aria-label="Search"
-                    [formControl]="stockFormControl" [matAutocomplete]="auto" />
+                    [formControl]="stockFormControl" [matAutocomplete]="auto" [matAutocompleteConnectedTo]="origin"
+                    (keydown.enter)="searchStock()" />
                 <div class="input-group-append">
                     <button class="btn btn-outline-secondary" type="button" (click)="searchStock()">
                         <i class="fa fa-search"></i>
@@ -16,9 +17,13 @@
                     </button>
                 </div>
             </div>
-            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="searchStock($event)">
-                <mat-option *ngFor="let option of filteredOptions | async" [value]="option">{{ option }}</mat-option>
-            </mat-autocomplete>
+            <div>
+
+                <mat-autocomplete #auto="matAutocomplete" (optionSelected)="searchStock($event)">
+                    <mat-option *ngFor="let option of filteredOptions | async" [value]="option">{{ option
+                        }}</mat-option>
+                </mat-autocomplete>
+            </div>
         </div>
     </div>
 </div>
