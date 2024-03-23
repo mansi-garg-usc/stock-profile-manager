@@ -20,6 +20,7 @@ export class TopNewsComponent implements OnInit, OnDestroy {
   private subscription: Subscription = new Subscription();
   @Input() stockInfo$: Observable<any> = of(null);
   @Input() isMarketOpen$: Observable<boolean> = of(false);
+  @Input() stockSymbol: string = '';
 
   constructor(private stockSearchService: StockSearchService) {
     this.subscription = this.stockSearchService.exposedNewsResult.subscribe({

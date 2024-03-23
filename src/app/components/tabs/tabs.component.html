@@ -1,22 +1,26 @@
 <mat-tab-group>
     <mat-tab label="Summary">
         <ng-template matTabContent>
-            <app-summary [stockInfo$]="stockInfo$" [isMarketOpen$]="isMarketOpen$"></app-summary>
+            <app-summary [stockInfo$]="stockInfo$" [isMarketOpen$]="isMarketOpen$" [stockSymbol]="stockSymbol"
+                [searchStock]="searchStock.bind(this)"></app-summary>
         </ng-template>
     </mat-tab>
     <mat-tab label="Top News">
         <ng-template matTabContent>
-            <app-top-news [stockInfo$]="stockInfo$" [isMarketOpen$]="isMarketOpen$"></app-top-news>
+            <app-top-news [stockInfo$]="stockInfo$" [isMarketOpen$]="isMarketOpen$"
+                [stockSymbol]="stockSymbol"></app-top-news>
         </ng-template>
     </mat-tab>
     <mat-tab label="Charts">
         <ng-template matTabContent>
-            <app-charts [stockInfo$]="stockInfo$" [isMarketOpen$]="isMarketOpen$"></app-charts>
+            <app-charts [stockInfo$]="stockInfo$" [isMarketOpen$]="isMarketOpen$"
+                [stockSymbol]="stockSymbol"></app-charts>
         </ng-template>
     </mat-tab>
     <mat-tab label="Insights">
         <ng-template matTabContent>
-            <app-insights [stockInfo$]="stockInfo$" [isMarketOpen$]="isMarketOpen$"></app-insights>
+            <app-insights [stockInfo$]="stockInfo$" [isMarketOpen$]="isMarketOpen$"
+                [stockSymbol]="stockSymbol"></app-insights>
         </ng-template>
     </mat-tab>
 </mat-tab-group>

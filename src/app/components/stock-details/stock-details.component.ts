@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { BehaviorSubject, of, Subscription, switchMap } from 'rxjs';
 import { StockSearchService } from '../../core/services/stock-search.service';
 import { TabsComponent } from '../tabs/tabs.component';
 import { SimpleChanges } from '@angular/core';
 import { StockBuyModalComponent } from '../utility-components/buy-modal/buy-modal.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { StockSellModalComponent } from '../utility-components/sell-modal/sell-modal.component';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-stock-details',
@@ -15,9 +16,10 @@ import { StockSellModalComponent } from '../utility-components/sell-modal/sell-m
   standalone: true,
   imports: [CommonModule, TabsComponent, StockBuyModalComponent],
 })
-export class StockDetailsComponent {
+export class StockDetailsComponent implements OnInit, OnDestroy {
   @Input() stockInfo: any;
   @Input() stockSymbol: string = '';
+  @Input() searchStock: any;
 
   isMarketOpen = new BehaviorSubject<boolean>(false);
   private stockInfoSubject = new BehaviorSubject<any>(null);
@@ -32,8 +34,10 @@ export class StockDetailsComponent {
   public showTabs: boolean = false;
   private subscription: Subscription = new Subscription();
   moneyInWallet: number = 10000000; //TODO
+
   constructor(
     private stockSearchService: StockSearchService,
+    private activatedRoute: ActivatedRoute,
     private modalService: NgbModal
   ) {}
   // buyModalService: NgbModal = new NgbModal();
@@ -42,27 +46,50 @@ export class StockDetailsComponent {
     this.subscription = this.stockSearchService.exposedSearchResult.subscribe({
       next: (results) => {
         if (results && results.length > 0) {
-          this.stockInfo = results;
-          this.setMarketStatus();
-          this.checkChangePercentage(this.stockInfo.stockPriceDetails.dp);
-          this.dateTimestamp = this.formatDate(
-            this.stockInfo.stockPriceDetails.t
-          );
-          this.marketStatusString = this.isMarketOpen.value
-            ? 'Market is Open'
-            : 'Market is Closed';
-          this.showTabs = true;
-          this.stockInfoSubject.next(this.stockInfo);
-          console.log('Stock stockInfoSubject:', this.stockInfoSubject);
-          console.log('show tabs', this.showTabs);
-
-          console.log('stock symbol:', this.stockSymbol);
-          this.stockSearchService.startPeriodicUpdate(this.stockSymbol); // Adjust the property path as per your data structure
+          this.handleSearchResults(results);
         }
+        console.log('search stock function', this.searchStock);
       },
       error: (error) =>
         console.error('Error while fetching stock details:', error),
     });
+
+    this.subscription.add(
+      this.activatedRoute.params
+        .pipe(
+          switchMap((params) => {
+            const ticker = params['ticker'];
+            if (ticker) {
+              return this.stockSearchService.searchStock(ticker); // Ensure searchStock returns an Observable
+            }
+            return of({});
+          })
+        )
+        .subscribe((results) => {
+          if (results && Object.keys(results).length > 0) {
+            this.handleSearchResults(results);
+          }
+        })
+    );
+  }
+
+  handleSearchResults(results: any) {
+    if (results && results.length > 0) {
+      this.stockInfo = results;
+      this.setMarketStatus();
+      this.checkChangePercentage(this.stockInfo.stockPriceDetails.dp);
+      this.dateTimestamp = this.formatDate(this.stockInfo.stockPriceDetails.t);
+      this.marketStatusString = this.isMarketOpen.value
+        ? 'Market is Open'
+        : 'Market is Closed';
+      this.showTabs = true;
+      this.stockInfoSubject.next(this.stockInfo);
+      console.log('Stock stockInfoSubject:', this.stockInfoSubject);
+      console.log('show tabs', this.showTabs);
+
+      console.log('stock symbol:', this.stockSymbol);
+      this.stockSearchService.startPeriodicUpdate(this.stockSymbol); // Adjust the property path as per your data structure
+    }
   }
 
   openBuyModal() {
@@ -137,16 +164,16 @@ export class StockDetailsComponent {
   }
 
   setMarketStatus() {
-    this.time = this.stockInfo.stockPriceDetails.t * 1000;
+    this.time = this.stockInfo?.stockPriceDetails?.t * 1000;
     let currentTime = new Date().getTime();
     let timeDiff = currentTime - this.time;
     let fiveMinutes = 5 * 60 * 1000;
     if (timeDiff < fiveMinutes) {
-      this.isMarketOpen.next(true);
+      this.isMarketOpen?.next(true);
     } else {
-      this.isMarketOpen.next(false);
+      this.isMarketOpen?.next(false);
     }
-    console.log('Is market open:', this.isMarketOpen.value);
+    console.log('Is market open:', this.isMarketOpen?.value);
   }
 
   toggleFavorite(): void {

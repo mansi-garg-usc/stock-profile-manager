@@ -27,4 +27,5 @@
         </div>
     </div>
 </div>
-<app-stock-details *ngIf="stockInfo" [stockInfo]="stockInfo" [stockSymbol]="selectedStockSymbol"></app-stock-details>
+<app-stock-details *ngIf="stockInfo" [stockInfo]="stockInfo" [stockSymbol]="selectedStockSymbol"
+    [searchStock]="searchStock.bind(this)"></app-stock-details>

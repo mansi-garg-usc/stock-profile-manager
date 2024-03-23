@@ -8,6 +8,7 @@ import {
   map,
   throwError,
   of,
+  switchMap,
 } from 'rxjs';
 import { BehaviorSubject } from 'rxjs';
 
@@ -18,12 +19,16 @@ export class StockSearchService {
   private updateInterval?: number;
 
   private currentStockSymbol = new BehaviorSubject<string | null>(null);
+  exposedCurrentStockSymbol = this.currentStockSymbol.asObservable();
 
   private searchResult = new BehaviorSubject<any>([]);
   exposedSearchResult = this.searchResult.asObservable();
 
   private newsResult = new BehaviorSubject<any>([]);
   exposedNewsResult = this.newsResult.asObservable();
+
+  private companyPeers = new BehaviorSubject<any>([]);
+  exposedCompanyPeers = this.companyPeers.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -58,17 +63,26 @@ export class StockSearchService {
     const stockPriceDetails = this.http.get(
       `${this.baseUrl}/latestPrice?symbol=${encodeURIComponent(stock)}`
     );
-    const result = forkJoin({ companyInfo, stockPriceDetails });
+    const companyPeers = this.http.get(
+      `${this.baseUrl}/peers?symbol=${encodeURIComponent(stock)}`
+    );
+    const result = forkJoin({ companyInfo, stockPriceDetails, companyPeers });
     // const news = this.fetchNews(stock);
     result.subscribe({
       next: (response) => {
-        this.updateSearchResults(
-          { companyInfo: response.companyInfo, stockPriceDetails: response.stockPriceDetails },
-        );
+        this.updateSearchResults({
+          companyInfo: response.companyInfo,
+          stockPriceDetails: response.stockPriceDetails,
+          companyPeers: response.companyPeers,
+        });
       },
       error: (error) => {
         console.error('Error fetching stock data:', error);
-        this.updateSearchResults({ companyInfo: null, stockPriceDetails: null});
+        this.updateSearchResults({
+          companyInfo: null,
+          stockPriceDetails: null,
+          companyPeers: null,
+        });
       },
     });
     return result;
@@ -78,12 +92,36 @@ export class StockSearchService {
     this.searchResult?.next(results);
   }
 
+  fetchPeersForNewTicker(): Observable<any> {
+    return this.exposedCurrentStockSymbol.pipe(
+      switchMap((symbol) => {
+        if (!symbol) {
+          return of([]);
+        } else {
+          return this.http
+            .get<any[]>(
+              `${this.baseUrl}/peers?symbol=${encodeURIComponent(symbol)}`
+            )
+            .pipe(
+              tap((response) => {
+                this.companyPeers?.next(response);
+              }),
+              catchError((error) => {
+                console.error('Error fetching company peers:', error);
+                this.companyPeers?.next('');
+                return throwError(
+                  () => new Error('Error fetching company peers')
+                );
+              })
+            );
+        }
+      })
+    );
+  }
+
   updateStockSymbol(newSymbol: string) {
     this.currentStockSymbol?.next(newSymbol);
-  }
-  clearSearchResults() {
-    this.searchResult?.next(null);
-    this.newsResult?.next(null);
+    // this.clearSearchResults();
   }
 
   startPeriodicUpdate(stockSymbol: string) {
@@ -97,12 +135,11 @@ export class StockSearchService {
     this.updateInterval = window.setInterval(() => {
       this.searchStock(stockSymbol).subscribe({
         next: (response) => {
-          this.updateSearchResults(
-            {
-              companyInfo: response.companyInfo,
-              stockPriceDetails: response.stockPriceDetails,
-            },
-          );
+          this.updateSearchResults({
+            companyInfo: response.companyInfo,
+            stockPriceDetails: response.stockPriceDetails,
+            companyPeers: response.companyPeers,
+          });
           console.log('Data updated', response);
           // Handle the response if needed
         },
@@ -119,50 +156,59 @@ export class StockSearchService {
   }
 
   fetchNews(): Observable<any> {
-    const stock = this.currentStockSymbol?.value;
-    if (!stock) {
-      throw new Error('Stock symbol is not set');
-    }
-    return this.http
-      .get<any[]>(`${this.baseUrl}/news?symbol=${encodeURIComponent(stock)}`)
-      .pipe(
-        map((response) => {
-          // Initialize an array to hold the filtered news items
-          const filteredNews = [];
+    return this.exposedCurrentStockSymbol.pipe(
+      switchMap((stock) => {
+        if (!stock) {
+          console.error('Stock symbol is not set');
+          return throwError(() => new Error('Stock symbol is not set'));
+        } else {
+          return this.http
+            .get<any[]>(
+              `${this.baseUrl}/news?symbol=${encodeURIComponent(stock)}`
+            )
+            .pipe(
+              map((response) => {
+                const filteredNews = [];
+                for (let item of response) {
+                  if (
+                    item.source &&
+                    item.datetime &&
+                    item.headline &&
+                    item.summary &&
+                    item.url &&
+                    item.image
+                  ) {
+                    filteredNews?.push(item);
+                    if (filteredNews?.length === 20) {
+                      break;
+                    }
+                  }
+                }
 
-          // Loop through the response and add items with all required fields
-          // to the filteredNews array until it contains 20 items
-          for (let item of response) {
-            if (
-              item.source &&
-              item.datetime &&
-              item.headline &&
-              item.summary &&
-              item.url &&
-              item.image
-            ) {
-              filteredNews?.push(item);
-              if (filteredNews?.length === 20) {
-                break; // Exit the loop once 20 valid items are found
-              }
-            }
-          }
-
-          return filteredNews;
-        }),
-        tap((filteredNews) => {
-          // Update the BehaviorSubject with the filtered news
-          this.newsResult?.next(filteredNews);
-        }),
-        catchError((error) => {
-          console.error('Error fetching news:', error);
-          this.newsResult?.next([]); // Clear the news results on error
-          return throwError(() => new Error('Error fetching news')); // Re-throw the error for subscribers to handle
-        })
-      );
+                return filteredNews;
+              }),
+              tap((filteredNews) => {
+                this.newsResult.next(filteredNews);
+              }),
+              catchError((error) => {
+                console.error('Error fetching news:', error);
+                this.newsResult.next([]);
+                return throwError(() => new Error('Error fetching news'));
+              })
+            );
+        }
+      })
+    );
   }
 
-  updateNewsResults(results: any) {
-    this.newsResult.next(results);
+  // updateNewsResults(results: any) {
+  //   this.newsResult.next(results);
+  // }
+
+  clearSearchResults() {
+    this.searchResult?.next(null);
+    this.newsResult?.next(null);
+    this.companyPeers?.next(null);
+
   }
 }

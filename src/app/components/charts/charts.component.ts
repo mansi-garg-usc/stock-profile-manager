@@ -13,6 +13,7 @@ import StockChart from 'highcharts/highstock';
 export class ChartsComponent {
   @Input() stockInfo$: Observable<any> = of(null);
   @Input() isMarketOpen$: Observable<boolean> = of(false);
+  @Input() stockSymbol: string = '';
 
   stockPriceDetails: any;
 

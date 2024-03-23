@@ -17,13 +17,18 @@
                     <p><strong>Webpage:</strong>
                         <a [href]="stockInfo?.companyInfo?.weburl">{{ stockInfo?.companyInfo?.weburl }}</a>
                     </p>
-                    <p><strong>Company peers:</strong> AAPL, DELL, SMCI, HPQ, HPE, NTAP, WDC, PSTG, XRX</p>
+                    <p><strong>Company peers:</strong>
+                        <span *ngFor="let peer of peers; let isLast=last">
+                            <a href="javascript:void(0)" (click)="searchPeer(peer)">{{ peer }}</a><span *ngIf="
+                                !isLast">, </span>
+                        </span>
+                    </p>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
-            <h5>AAPL Hourly Price Variation</h5>
-            <img src="path_to_your_chart_image" alt="AAPL Hourly Price Variation" class="img-fluid">
+            <h5>{{stockSymbol.toUpperCase()}} Hourly Price Variation</h5>
+            <img src="path_to_your_chart_image" alt="{{stockSymbol}} Hourly Price Variation" class="img-fluid">
         </div>
     </div>
 </div>

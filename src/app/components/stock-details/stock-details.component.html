@@ -38,6 +38,7 @@
             </div>
         </div>
     </div>
-    <app-tabs *ngIf="showTabs" [stockInfo$]="stockInfo$" [isMarketOpen$]="isMarketOpen$"></app-tabs>
+    <app-tabs *ngIf="showTabs" [stockInfo$]="stockInfo$" [isMarketOpen$]="isMarketOpen$" [stockSymbol]="stockSymbol"
+        [searchStock]="searchStock.bind(this)"></app-tabs>
 
 </div>

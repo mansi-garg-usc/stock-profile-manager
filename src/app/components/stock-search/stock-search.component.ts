@@ -29,6 +29,7 @@ import { StockDetailsComponent } from '../stock-details/stock-details.component'
 })
 export class StockSearchComponent implements OnInit, OnDestroy {
   @Input() stockInfo: any;
+  companyPeers: any;
   selectedStockSymbol: string = '';
   stockFormControl = new FormControl();
   filteredOptions: Observable<string[]> = of([]);
@@ -51,6 +52,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
               ? {
                   companyInfo: results.companyInfo,
                   stockPriceDetails: results.stockPriceDetails,
+                  companyPeers: results.companyPeers,
                 }
               : null;
           console.log('Stock Info in search component:', this.stockInfo);
@@ -60,10 +62,18 @@ export class StockSearchComponent implements OnInit, OnDestroy {
     );
   }
 
-  searchStock(event?: MatAutocompleteSelectedEvent) {
-    const stock = event ? event.option.value : this.stockFormControl.value;
+  searchStock(event?: any) {
+    let stock = '';
+    if (event && event.option && event.option.value) {
+      stock = event.option.value;
+    } else if (typeof event === 'string') {
+      stock = event;
+    } else {
+      stock = this.stockFormControl.value;
+    }
     if (!stock) return;
     this.selectedStockSymbol = stock;
+    this.stockFormControl.setValue(stock, { emitEvent: false });
 
     this.stockSearchService.searchStock(stock).subscribe({
       next: (results) => {
@@ -76,6 +86,10 @@ export class StockSearchComponent implements OnInit, OnDestroy {
             results &&
             results?.hasOwnProperty('companyInfo') &&
             results.stockPriceDetails,
+          companyPeers:
+            results &&
+            results?.hasOwnProperty('companyInfo') &&
+            results.companyPeers,
         };
       },
       error: (error: any) => {
@@ -83,6 +97,10 @@ export class StockSearchComponent implements OnInit, OnDestroy {
       },
     });
   }
+
+  // ngOnChanges() {
+  //   this.stockFormControl.setValue(this.selectedStockSymbol);
+  // }
 
   ngOnDestroy() {
     if (this.subscription) {
