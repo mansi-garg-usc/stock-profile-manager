@@ -18,7 +18,7 @@
     <div class="row">
         <div class="col-sm-6" *ngFor="let newsItem of news">
             <div class="card m-3 news-card" data-toggle="modal" data-target="#buyportModel">
-                <div class="card-body">
+                <div class="card-body" (click)="openNewsModal(newsItem.url)">
                     <div class="row align-items-center">
                         <div class="col-md-4 image-fit">
                             <img class="card-img" src="{{ newsItem.image }}" alt="News card" />

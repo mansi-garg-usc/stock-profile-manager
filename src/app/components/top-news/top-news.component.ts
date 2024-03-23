@@ -3,7 +3,8 @@ import { Observable, Subscription, of } from 'rxjs';
 import { StockSearchService } from '../../core/services/stock-search.service';
 import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NewsModalComponent } from '../utility-components/news-modal/news-modal.component';
 
 @Component({
   selector: 'app-top-news',
@@ -22,13 +23,14 @@ export class TopNewsComponent implements OnInit, OnDestroy {
   @Input() isMarketOpen$: Observable<boolean> = of(false);
   @Input() stockSymbol: string = '';
 
-  constructor(private stockSearchService: StockSearchService) {
+    constructor(private stockSearchService: StockSearchService, private modalService: NgbModal) {
     this.subscription = this.stockSearchService.exposedNewsResult.subscribe({
       next: (results) => {
         this.news = results?.length > 0 ? results : null;
       },
       error: (error) => console.error('Error fetching news:', error),
     });
+    
   }
   ngOnInit() {
     this.getNews();
@@ -38,25 +40,6 @@ export class TopNewsComponent implements OnInit, OnDestroy {
     this.subscription.add(
       this.stockSearchService.fetchNews().subscribe({
         next: (results) => {
-          // this.news = results
-          //   .filter(
-          //     (item: any) =>
-          //       item.source &&
-          //       item.datetime &&
-          //       item.headline &&
-          //       item.summary &&
-          //       item.url
-          //   )
-          //   .map((item: any) => ({
-          //     title: item.headline, // Assuming 'headline' is what you meant by 'title'
-          //     image: item.image, // Ensure 'image' field exists in your data
-          //     summary: item.summary,
-          //     datetime: item.datetime,
-          //     url: item.url,
-          //     source: item.source,
-          //   }));
-
-          // console.log(this.news);
 
           this.news = results;
           console.log(this.news);
@@ -69,10 +52,33 @@ export class TopNewsComponent implements OnInit, OnDestroy {
     );
   }
 
+  getNewsByUrl(url: string) {
+    console.log(this.news)
+    return this.news.filter(individualNews => {
+      return individualNews.url === url
+    })
+  }
+
   ngOnDestroy() {
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
+  }
+
+  openNewsModal(url: string) {
+    const newsModalReference = this.modalService.open(NewsModalComponent);
+    const currentNews = this.getNewsByUrl(url)[0]
+    newsModalReference.componentInstance.source = currentNews.source;
+    newsModalReference.componentInstance.datetime = this.convertUnixToDate(currentNews.datetime);
+    newsModalReference.componentInstance.headline = currentNews.headline;
+    newsModalReference.componentInstance.summary = currentNews.summary;
+    newsModalReference.componentInstance.url = currentNews.url;
+  }
+
+  convertUnixToDate(unixTimestamp: number) {
+    var date = new Date(unixTimestamp * 1000);
+    var options: any = { year: 'numeric', month: 'long', day: 'numeric' };
+    return date.toLocaleDateString('en-US', options);
   }
 }
 
@@ -80,7 +86,7 @@ interface NewsItem {
   title: string;
   image: string;
   summary: string;
-  datetime: string;
+  datetime: number;
   url: string;
   source: string;
   headline: string;

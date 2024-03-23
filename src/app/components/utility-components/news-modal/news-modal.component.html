@@ -1,0 +1,27 @@
+<div #newsModal class="modal-dialog modal-dialog-centered modal-lg">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div>
+        <h2 class="modal-title" id="newsModalLabel">{{ source }}</h2>
+        <p class="text-muted">{{ datetime }}</p>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" (click)="closeModal()"></button>
+    </div>
+    <div class="modal-body">
+      <h4>{{ headline }}</h4>
+      <p>{{ summary }}</p>
+      <p class="details-text">For more details click <a href="{{ url }}" target="_blank">here</a>.</p>
+      <div class="share-container">
+        <p class="mb-0 me-3">Share:</p>
+        <div>
+          <a href="https://twitter.com/intent/tweet?text={{ headline }}&url={{ url }}" class="share-icon" target="_blank">
+            <i class="bi bi-twitter"></i>
+          </a>
+          <a href="https://www.facebook.com/sharer/sharer.php?u={{ url }}" target="_blank" class="share-icon me-2">
+            <i class="bi bi-facebook"></i>
+          </a>
+        </div>
+      </div>    
+    </div>
+  </div>
+</div>
