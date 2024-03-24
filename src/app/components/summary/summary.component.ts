@@ -59,14 +59,14 @@ export class SummaryComponent {
     const cleanedUpPeers: string[] = [];
     const encounteredPeer: Record<string, boolean> = {};
 
-    peers.forEach((str) => {
+    peers?.forEach((str) => {
       if (!str.includes('.') && !encounteredPeer[str]) {
-        cleanedUpPeers.push(str);
+        cleanedUpPeers?.push(str);
         encounteredPeer[str] = true;
       }
     });
 
-    console.log('Cleaned up peers:', cleanedUpPeers);
+    // console.log('Cleaned up peers:', cleanedUpPeers);
 
     return cleanedUpPeers;
   }

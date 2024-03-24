@@ -14,14 +14,14 @@
                             <button class="btn-close align-self-start" aria-label="Remove"
                                 (click)="removeFromWatchlist(watchlistRecord.symbol)"></button>
                             <strong>{{ watchlistRecord.symbol }}</strong>
-                            <span>{{ watchlistRecord.name }}</span>
+                            <span>{{ watchlistRecord.companyName }}</span>
                         </div>
                         <div>
                             <p class="card-text mb-0">
-                                {{ watchlistRecord.price }}
+                                {{ watchlistRecord.stockPrice }}
                                 <span
-                                    [ngClass]="{'text-success': watchlistRecord.change >= 0, 'text-danger': watchlistRecord.change < 0}">
-                                    {{ watchlistRecord.change }} ({{ watchlistRecord.changePercentage }}%)
+                                    [ngClass]="{'text-success': watchlistRecord.changeAmount >= 0, 'text-danger': watchlistRecord.changeAmount < 0}">
+                                    {{ watchlistRecord.changeAmount }} ({{ watchlistRecord.changePercentage }}%)
                                 </span>
                             </p>
                         </div>

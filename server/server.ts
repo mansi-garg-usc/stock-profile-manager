@@ -259,12 +259,14 @@ app.get('/api/addwatchlist', async (req, res) => {
   //const apiKey = finnhub_api_key;
   try {
     await client.connect();
+    const session = client.startSession();
     const watchlistResponse = await watchlist.insertOne({
       symbol: tickerSymbol,
     });
     console.log('Added to watchlist:', watchlistResponse);
     const watchlistData = await watchlist.find({}).toArray();
     res.json(watchlistData);
+    await session.endSession();
     client.close();
   } catch (error) {
     res.status(500).send(`Error adding to watchlist - ${error}`);
@@ -274,9 +276,11 @@ app.get('/api/addwatchlist', async (req, res) => {
 app.get('/api/getwatchlist', async (req, res) => {
   try {
     await client.connect();
+    const session = client.startSession();
     const watchlistData = await watchlist.find({}).toArray();
     res.json(watchlistData);
     console.log('Watchlist Data:', watchlistData);
+    await session.endSession();
     client.close();
   } catch (error) {
     res.status(500).send(`Error retrieving watchlist - ${error}`);
@@ -287,12 +291,14 @@ app.get('/api/removewatchlist', async (req, res) => {
   const tickerSymbol = req.query['symbol'];
   try {
     await client.connect();
+    const session = client.startSession();
     const watchlistResponse = await watchlist.deleteOne({
       symbol: tickerSymbol,
     });
     console.log('Removed from watchlist:', watchlistResponse);
     const watchlistData = await watchlist.find({}).toArray();
     res.json(watchlistData);
+    await session.endSession();
     client.close();
   } catch (error) {
     res.status(500).send(`Error removing from watchlist - ${error}`);
@@ -302,6 +308,7 @@ app.get('/api/removewatchlist', async (req, res) => {
 app.get('/api/addportfoliorecord', async (req, res) => {
   try {
     await client.connect();
+    const session = client.startSession();
     const portfolioResponse = await portfolio.insertOne({
       stocksymbol: req.query['symbol'],
       quantity: req.query['stockquantity'],
@@ -310,6 +317,7 @@ app.get('/api/addportfoliorecord', async (req, res) => {
     console.log('Added to portfolio:', portfolioResponse);
     const portfolioData = await portfolio.find({}).toArray();
     res.json(portfolioData);
+    await session.endSession();
     client.close();
   } catch (error) {
     res.status(500).send(`Error adding to portfolio - ${error}`);
@@ -319,9 +327,11 @@ app.get('/api/addportfoliorecord', async (req, res) => {
 app.get('/api/getportfolio', async (req, res) => {
   try {
     await client.connect();
+    const session = client.startSession();
     const portfolioData = await portfolio.find({}).toArray();
     res.json(portfolioData);
     console.log('Portfolio Data:', portfolioData);
+    await session.endSession();
     client.close();
   } catch (error) {
     res.status(500).send(`Error retrieving portfolio - ${error}`);
@@ -330,21 +340,21 @@ app.get('/api/getportfolio', async (req, res) => {
 
 app.get('/api/removeportfoliorecord', async (req, res) => {
   try {
-
-  const tickerSymbol = req.query['symbol'];
+    const tickerSymbol = req.query['symbol'];
     await client.connect();
+    const session = client.startSession();
     const portfolioResponse = await portfolio.deleteOne({
       stocksymbol: tickerSymbol,
     });
     console.log('Removed from portfolio:', portfolioResponse);
     const portfolioData = await portfolio.find({}).toArray();
     res.json(portfolioData);
+    await session.endSession();
     client.close();
   } catch (error) {
     res.status(500).send(`Error removing from portfolio - ${error}`);
   }
-}
-);
+});
 
 app.get('/api/updateportfoliorecord', async (req, res) => {
   try {
@@ -352,6 +362,7 @@ app.get('/api/updateportfoliorecord', async (req, res) => {
     const quantity = req.query['stockquantity'];
     const cost = req.query['price'];
     await client.connect();
+    const session = client.startSession();
     const portfolioResponse = await portfolio.updateOne(
       { stocksymbol: tickerSymbol },
       { $set: { quantity: quantity, cost: cost } }
@@ -359,6 +370,7 @@ app.get('/api/updateportfoliorecord', async (req, res) => {
     console.log('Updated portfolio:', portfolioResponse);
     const portfolioData = await portfolio.find({}).toArray();
     res.json(portfolioData);
+    await session.endSession();
     client.close();
   } catch (error) {
     res.status(500).send(`Error updating portfolio - ${error}`);
@@ -392,6 +404,7 @@ app.listen(port, () => {
 // const startServer = async () => {
 //   try {
 //     await client.connect();
+const session = client.startSession();
 //     console.log('Connected to MongoDB');
 
 //     // Add routes that need database connection here, for example:

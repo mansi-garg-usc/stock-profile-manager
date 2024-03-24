@@ -42,7 +42,7 @@ export class TopNewsComponent implements OnInit, OnDestroy {
         next: (results) => {
 
           this.news = results;
-          console.log(this.news);
+          // console.log(this.news);
         },
         error: (error) => {
           console.error('Error fetching news:', error);
@@ -53,7 +53,7 @@ export class TopNewsComponent implements OnInit, OnDestroy {
   }
 
   getNewsByUrl(url: string) {
-    console.log(this.news)
+    // console.log(this.news)
     return this.news.filter(individualNews => {
       return individualNews.url === url
     })

@@ -1,11 +1,18 @@
 <div *ngIf="stockInfo" class="container stock-details-layout">
+    <div *ngIf="" class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-check-circle-fill me-2"></i> <!-- Bootstrap icon for checkmark -->
+            <span>{{stockSymbol.toUpperCase()}} added to Watchlist.</span>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     <div class="row">
         <!-- Company Info Column -->
         <div class="col-12 col-sm-4">
             <div class="company-info-column">
                 <p>{{stockInfo?.companyInfo?.ticker }}<i class="bi"
-                        [ngClass]="{'bi-star': !isFavorite, 'bi-star-fill text-warning': isFavorite}"
-                        (click)="toggleFavorite()"></i></p>
+                        [ngClass]="{'bi-star': !isPresentInWatchlist, 'bi-star-fill text-warning': isPresentInWatchlist}"
+                        (click)="toggleWatchlistEntry()"></i></p>
                 <p>{{ stockInfo?.companyInfo?.name }}</p>
                 <p>{{ stockInfo?.companyInfo?.exchange }}</p>
                 <div class="d-grid gap-2 d-sm-block">

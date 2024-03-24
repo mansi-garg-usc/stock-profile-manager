@@ -36,7 +36,7 @@ export class TabsComponent {
     );
     this.subscription.add(
       this.isMarketOpen$.subscribe((isMarketOpen$) => {
-        console.log('Market Open in tabs component:', isMarketOpen$);
+        // console.log('Market Open in tabs component:', isMarketOpen$);
       })
     );
   }
