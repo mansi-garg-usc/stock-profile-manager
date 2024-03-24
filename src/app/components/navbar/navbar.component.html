@@ -7,16 +7,16 @@
     </svg>
   </button>
   <div class="buttons">
-    <button class="button" routerLink="/search/home">Search</button>
-    <button class="button">Watchlist</button>
+    <button class="button" [routerLink]="['/search','AAPL']">Search</button>
+    <button class="button" routerLink="/watchlist">Watchlist</button>
     <button class="button">Portfolio</button>
   </div>
 </mat-toolbar>
 
 <mat-sidenav #sidenav mode="over" class="sidenav">
   <mat-nav-list class="navlist-container">
-    <a mat-list-item routerLink="/search">Search</a>
-    <a mat-list-item href="#">Watchlist</a>
+    <a mat-list-item [routerLink]="['/search','AAPL']">Search</a>
+    <a mat-list-item routerLink="/watchlist">Watchlist</a>
     <a mat-list-item href="#">Portfolio</a>
   </mat-nav-list>
 </mat-sidenav>

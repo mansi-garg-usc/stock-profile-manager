@@ -6,7 +6,9 @@ import {
   NavigationStart,
   Router,
   RouterEvent,
+  RouterLink,
   RouterOutlet,
+  RouterModule,
 } from '@angular/router';
 import { FooterComponent } from './components/footer/footer.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
@@ -27,6 +29,8 @@ import { filter } from 'rxjs';
     TabsComponent,
     FooterComponent,
     StockDetailsComponent,
+    RouterLink,
+    RouterModule
   ],
 })
 export class AppComponent {

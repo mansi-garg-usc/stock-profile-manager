@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
   MatAutocompleteModule,
@@ -11,6 +11,7 @@ import { MatInputModule } from '@angular/material/input';
 import { Observable, Subscription, of, startWith, switchMap } from 'rxjs';
 import { StockSearchService } from '../../core/services/stock-search.service';
 import { StockDetailsComponent } from '../stock-details/stock-details.component';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-stock-search',
@@ -29,13 +30,21 @@ import { StockDetailsComponent } from '../stock-details/stock-details.component'
 })
 export class StockSearchComponent implements OnInit, OnDestroy {
   @Input() stockInfo: any;
+
+  route: ActivatedRoute = inject(ActivatedRoute);
   companyPeers: any;
   selectedStockSymbol: string = '';
   stockFormControl = new FormControl();
   filteredOptions: Observable<string[]> = of([]);
   private subscription: Subscription = new Subscription();
+  watchlist = localStorage.setItem('watchlist', JSON.stringify([]));
 
-  constructor(private stockSearchService: StockSearchService) {}
+  constructor(
+    private stockSearchService: StockSearchService,
+    private router: Router
+  ) {
+    this.selectedStockSymbol = this.route.snapshot.params['ticker'];
+  }
 
   ngOnInit() {
     this.filteredOptions = this.stockFormControl.valueChanges.pipe(
@@ -72,6 +81,8 @@ export class StockSearchComponent implements OnInit, OnDestroy {
       stock = this.stockFormControl.value;
     }
     if (!stock) return;
+
+    this.router.navigate(['/search', stock]);
     this.selectedStockSymbol = stock;
     this.stockFormControl.setValue(stock, { emitEvent: false });
 
