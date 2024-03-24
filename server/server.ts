@@ -3,12 +3,30 @@ import express, { Request, Response } from 'express';
 import path from 'path';
 const axios = require('axios');
 
+const { MongoClient, ServerApiVersion } = require('mongodb');
+// Replace the placeholder with your Atlas connection string
+
+const uri =
+  'mongodb+srv://mansi:zkHDQ2TIRLMdPZlY@firstcluster.ard0ayc.mongodb.net/';
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
+
+const db = client.db('stockprofilemanager');
+const watchlist = db.collection('watchlist');
+const portfolio = db.collection('portfolio');
+
 const app = express();
-app.use(cors());
 const finnhub_api_key = 'cnih581r01qj1g5q4jlgcnih581r01qj1g5q4jm0';
 const polygon_api_key = 'Veu4EyzzJTduRuvf0Y1woy5mwtn1mMIA';
 const port = 8000;
 
+app.use(cors());
 app.use(
   express.static(path.join(__dirname, '../dist/stock-portfolio-manager'))
 );
@@ -236,6 +254,117 @@ app.get('/api/search', async (req, res) => {
   }
 });
 
+app.get('/api/addwatchlist', async (req, res) => {
+  const tickerSymbol = req.query['symbol'];
+  //const apiKey = finnhub_api_key;
+  try {
+    await client.connect();
+    const watchlistResponse = await watchlist.insertOne({
+      symbol: tickerSymbol,
+    });
+    console.log('Added to watchlist:', watchlistResponse);
+    const watchlistData = await watchlist.find({}).toArray();
+    res.json(watchlistData);
+    client.close();
+  } catch (error) {
+    res.status(500).send(`Error adding to watchlist - ${error}`);
+  }
+});
+
+app.get('/api/getwatchlist', async (req, res) => {
+  try {
+    await client.connect();
+    const watchlistData = await watchlist.find({}).toArray();
+    res.json(watchlistData);
+    console.log('Watchlist Data:', watchlistData);
+    client.close();
+  } catch (error) {
+    res.status(500).send(`Error retrieving watchlist - ${error}`);
+  }
+});
+
+app.get('/api/removewatchlist', async (req, res) => {
+  const tickerSymbol = req.query['symbol'];
+  try {
+    await client.connect();
+    const watchlistResponse = await watchlist.deleteOne({
+      symbol: tickerSymbol,
+    });
+    console.log('Removed from watchlist:', watchlistResponse);
+    const watchlistData = await watchlist.find({}).toArray();
+    res.json(watchlistData);
+    client.close();
+  } catch (error) {
+    res.status(500).send(`Error removing from watchlist - ${error}`);
+  }
+});
+
+app.get('/api/addportfoliorecord', async (req, res) => {
+  try {
+    await client.connect();
+    const portfolioResponse = await portfolio.insertOne({
+      stocksymbol: req.query['symbol'],
+      quantity: req.query['stockquantity'],
+      cost: req.query['price'],
+    });
+    console.log('Added to portfolio:', portfolioResponse);
+    const portfolioData = await portfolio.find({}).toArray();
+    res.json(portfolioData);
+    client.close();
+  } catch (error) {
+    res.status(500).send(`Error adding to portfolio - ${error}`);
+  }
+});
+
+app.get('/api/getportfolio', async (req, res) => {
+  try {
+    await client.connect();
+    const portfolioData = await portfolio.find({}).toArray();
+    res.json(portfolioData);
+    console.log('Portfolio Data:', portfolioData);
+    client.close();
+  } catch (error) {
+    res.status(500).send(`Error retrieving portfolio - ${error}`);
+  }
+});
+
+app.get('/api/removeportfoliorecord', async (req, res) => {
+  try {
+
+  const tickerSymbol = req.query['symbol'];
+    await client.connect();
+    const portfolioResponse = await portfolio.deleteOne({
+      stocksymbol: tickerSymbol,
+    });
+    console.log('Removed from portfolio:', portfolioResponse);
+    const portfolioData = await portfolio.find({}).toArray();
+    res.json(portfolioData);
+    client.close();
+  } catch (error) {
+    res.status(500).send(`Error removing from portfolio - ${error}`);
+  }
+}
+);
+
+app.get('/api/updateportfoliorecord', async (req, res) => {
+  try {
+    const tickerSymbol = req.query['symbol'];
+    const quantity = req.query['stockquantity'];
+    const cost = req.query['price'];
+    await client.connect();
+    const portfolioResponse = await portfolio.updateOne(
+      { stocksymbol: tickerSymbol },
+      { $set: { quantity: quantity, cost: cost } }
+    );
+    console.log('Updated portfolio:', portfolioResponse);
+    const portfolioData = await portfolio.find({}).toArray();
+    res.json(portfolioData);
+    client.close();
+  } catch (error) {
+    res.status(500).send(`Error updating portfolio - ${error}`);
+  }
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '/browser/index.html'));
 });
@@ -243,3 +372,46 @@ app.get('*', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}/`);
 });
+
+// async function run() {
+//   // Connect the client to the server (optional starting in v4.7)
+//   client.connect().then(() => {
+//     client
+//       .db('admin')
+//       .command({ ping: 1 })
+//       .then(() => {
+//         console.log(
+//           'Pinged your deployment. You successfully connected to MongoDB!'
+//         );
+//       });
+//   });
+//   // Send a ping to confirm a successful connection
+// }
+// run().catch(console.dir);
+
+// const startServer = async () => {
+//   try {
+//     await client.connect();
+//     console.log('Connected to MongoDB');
+
+//     // Add routes that need database connection here, for example:
+//     app.get('/api/my-data', async (req, res) => {
+//       try {
+//         const myCollection = client.db('myDatabaseName').collection('myCollectionName');
+//         const myData = await myCollection.find({}).toArray();
+//         res.json(myData);
+//       } catch (error) {
+//         console.error('Database query failed', error);
+//         res.status(500).send('Failed to get data');
+//       }
+//     });
+
+//     // Start the server
+//     const port = process.env.PORT || 8000;
+//     app.listen(port, () => {
+//       console.log(`Server running on http://localhost:${port}`);
+//     });
+//   } catch (error) {
+//     console.error('Failed to connect to MongoDB', error);
+//   }
+// };
