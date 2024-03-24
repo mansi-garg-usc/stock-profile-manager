@@ -28,6 +28,7 @@
     "cors": "^2.8.5",
     "highcharts": "^10.0.0",
     "highcharts-angular": "^3.0.0",
+    "mongodb": "^6.5.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.3"
