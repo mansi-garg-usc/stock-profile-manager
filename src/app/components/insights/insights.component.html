@@ -1,1 +1,49 @@
-<p>insights works!</p>
+
+
+<!-- <div *ngIf="earnings" class="container stock-details-layout">
+    <div class="row">
+        <div class="col-12 col-sm-4">
+            <p>{{ earnings.at(0)?.actual }}</p>
+        </div>
+        <div id="container"></div>
+    </div>
+</div> -->
+<!-- <div *ngIf="sentimentsAggregate">{{sentimentsAggregate.cp}}</div>
+<div id="container"></div>
+<div id="container1"></div> -->
+<div *ngIf="sentimentsAggregate" class="row">
+    <div class="col-12 col-sm-5" style="margin:0 auto;">
+        <table>
+            <tr>
+            <th></th>
+            <th scope="col">MSPR</th>
+            <th scope="col">Change</th>
+            </tr>
+        
+            <tr>
+            <th>Total</th>
+            <td>{{sentimentsAggregate.mt}}</td>
+            <td>{{sentimentsAggregate.ct}}</td>
+            </tr>
+        
+            <tr>
+            <th>Positive</th>
+            <td>{{sentimentsAggregate.mp}}</td>
+            <td>{{sentimentsAggregate.cp}}</td>
+            </tr>
+            
+            <tr>
+            <th>Negative</th>
+            <td>{{sentimentsAggregate.mn}}</td>
+            <td>{{sentimentsAggregate.cn}}</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+
+<div class="row">
+    <div id="container1" class="col-12 col-sm-5"></div>
+    <div class="col-12 col-sm-2"></div>
+    <div id="container" class="col-12 col-sm-5"></div>
+</div>

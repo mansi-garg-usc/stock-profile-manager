@@ -30,6 +30,15 @@ export class StockSearchService {
   private companyPeers = new BehaviorSubject<any>([]);
   exposedCompanyPeers = this.companyPeers.asObservable();
 
+  private companySentiment = new BehaviorSubject<any>([]);
+  exposedCompanySentiment = this.companySentiment.asObservable();
+
+  private companyEarnings = new BehaviorSubject<any>([]);
+  exposedCompanyEarnings = this.companyEarnings.asObservable();
+
+  private companyTrends = new BehaviorSubject<any>([]);
+  exposedCompanyTrends = this.companyTrends.asObservable();
+
   constructor(private http: HttpClient) {}
 
   private baseUrl = 'http://localhost:8000/api';
@@ -205,10 +214,100 @@ export class StockSearchService {
   //   this.newsResult.next(results);
   // }
 
+  fetchSentiment(): Observable<any> {
+    return this.exposedCurrentStockSymbol.pipe(
+      switchMap((stock) => {
+        if (!stock) {
+          console.error('Stock symbol is not set');
+          return throwError(() => new Error('Stock symbol is not set'));
+        } else {
+          return this.http
+            .get<any[]>(
+              `${this.baseUrl}/insiderSentiment?symbol=${encodeURIComponent(
+                stock
+              )}`
+            )
+            .pipe(
+              tap((response) => {
+                this.companySentiment?.next(response);
+              }),
+              catchError((error) => {
+                console.error(
+                  'Error fetching company insider sentiments:',
+                  error
+                );
+                this.companySentiment?.next('');
+                return throwError(
+                  () => new Error('Error fetching company insider sentiments')
+                );
+              })
+            );
+        }
+      })
+    );
+  }
+
+  fetchEearnings(): Observable<any> {
+    return this.exposedCurrentStockSymbol.pipe(
+      switchMap((stock) => {
+        if (!stock) {
+          console.error('Stock symbol is not set');
+          return throwError(() => new Error('Stock symbol is not set'));
+        } else {
+          return this.http
+            .get<any[]>(
+              `${this.baseUrl}/earnings?symbol=${encodeURIComponent(stock)}`
+            )
+            .pipe(
+              tap((response) => {
+                this.companyEarnings?.next(response);
+              }),
+              catchError((error) => {
+                console.error('Error fetching company earnings:', error);
+                this.companyEarnings?.next('');
+                return throwError(
+                  () => new Error('Error fetching company earnings')
+                );
+              })
+            );
+        }
+      })
+    );
+  }
+
+  fetchTrends(): Observable<any> {
+    return this.exposedCurrentStockSymbol.pipe(
+      switchMap((stock) => {
+        if (!stock) {
+          console.error('Stock symbol is not set');
+          return throwError(() => new Error('Stock symbol is not set'));
+        } else {
+          return this.http
+            .get<any[]>(
+              `${this.baseUrl}/recommendationTrends?symbol=${encodeURIComponent(
+                stock
+              )}`
+            )
+            .pipe(
+              tap((response) => {
+                this.companyTrends?.next(response);
+              }),
+              catchError((error) => {
+                console.error('Error fetching company trends:', error);
+                this.companyTrends?.next('');
+                return throwError(
+                  () => new Error('Error fetching company trends')
+                );
+              })
+            );
+        }
+      })
+    );
+  }
+
   clearSearchResults() {
     this.searchResult?.next(null);
     this.newsResult?.next(null);
     this.companyPeers?.next(null);
-
   }
 }
