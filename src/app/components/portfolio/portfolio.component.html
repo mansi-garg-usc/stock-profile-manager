@@ -1,1 +1,80 @@
-<p>portfolio works!</p>
+<div class="container mt-3">
+    <div class="row">
+        <div class="col-12">
+            <div class="row">
+                <div *ngIf="displaySellAlert" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ symbolSold }} sold successfully.
+                    <button type="button" class="btn-close" (click)="displaySellAlert = false"></button>
+                </div>
+                <div *ngIf="displayBuyAlert" class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ symbolBought }} bought successfully.
+                    <button type="button" class="btn-close" (click)="displayBuyAlert = false"></button>
+                </div>
+                <h2>My Portfolio</h2>
+                <div *ngIf="isLoading" class="loading-spinner spinner-border m-5  d-flex justify-content-center"
+                    style="width: 3rem; height: 3rem; color: darkblue" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="!isLoading" class="row">
+            <h4>Money in Wallet: {{ walletMoney }}</h4>
+            <div *ngIf="this.isEmpty && !isLoading" class="alert alert-warning text-center" role="alert">
+                Currently you don't have any stock.
+            </div>
+            <div class="col-12 mb-3" *ngFor="let record of displayData">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-md-6">
+                                <h5 class="card-title">{{ record?.companyName }} <span>{{ record?.stocksymbol
+                                        }}</span>
+                                </h5>
+                                <p class="card-text">
+                                    Quantity: <span>{{ record?.stockquantity }}</span>
+                                </p>
+                                <p class="card-text">
+                                    Avg. Cost / Share: <span>{{ record?.averagecost }}</span>
+                                </p>
+                                <p class="card-text">
+                                    Total Cost: <span>{{ record?.totalcost }}</span>
+                                </p>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="d-flex flex-column h-100 justify-content-between">
+                                    <div>
+                                        <p class="card-text">
+                                            Change:
+                                            <span [ngStyle]="record.arrowcolor">
+                                                <i [ngClass]="record.arrow"></i> {{ record.change |
+                                                number:'1.2-2' }}
+                                            </span>
+                                        </p>
+                                        <p class="card-text">
+                                            Current Price: <span [ngStyle]="record.arrowcolor">{{
+                                                record?.currentprice
+                                                }}</span>
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="card-text">
+                                            Market Value: <span [ngStyle]="record.arrowcolor">{{
+                                                record?.marketvalue
+                                                }}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
+                                <button type="button" class="btn btn-primary m-1"
+                                    (click)="openBuyModal(record?.stocksymbol, record.currentprice)">Buy</button>
+                                <button type="button" class="btn btn-danger m-1"
+                                    (click)="openSellModal(record?.stocksymbol, record.currentprice)">Sell</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

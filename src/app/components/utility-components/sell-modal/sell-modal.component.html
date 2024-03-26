@@ -1,6 +1,6 @@
 <div class="modal-header">
-    <h5 class="modal-title">{{ ticker }}</h5>
-    <button type="button" class="close" aria-label="Close" (click)="dismiss()">
+    <h5 class="modal-title">{{ stocksymbol }}</h5>
+    <button type="button" class="close" aria-label="Close"  data-bs-dismiss="modal" (click)="activeModal.dismiss('Cross click')">
         <span aria-hidden="true">&times;</span>
     </button>
 </div>
@@ -8,19 +8,22 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-12 mb-2">
-                <p class="mb-0">Current Price: <strong>{{ currentPrice | currency }}</strong></p>
+                <p class="mb-0">Current Price: <strong>{{ currentPrice }}</strong></p>
             </div>
             <div class="col-12 mb-2">
-                <label for="sellQuantity">Quantity to Sell:</label>
-                <input type="number" class="form-control" id="sellQuantity" [(ngModel)]="quantity">
+                <p class="mb-0">Money in Wallet: <strong>{{ moneyInWallet | currency}}</strong></p>
             </div>
-            <div class="col-12">
-                <p class="mb-0">Total: <strong>{{ getTotal() | currency }}</strong></p>
+            <div class="col-12 mb-2">
+                <label for="quantity">Quantity:</label>
+                <input type="number" class="form-control" [(ngModel)]="quantity">
             </div>
         </div>
     </div>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="dismiss()">Close</button>
-    <button type="button" class="btn btn-danger" (click)="sellStock()">Sell</button>
+
+    <div class="col-12">
+        <p class="mb-0">Total: <strong>{{ getTotal() }}</strong></p>
+    </div>
+    <button type="button" class="btn btn-success"  data-bs-dismiss="modal"  (click)="sellStock()">Sell</button>
 </div>

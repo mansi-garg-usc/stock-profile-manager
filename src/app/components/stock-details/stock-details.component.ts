@@ -125,17 +125,20 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
 
   openBuyModal() {
     const buyModalReference = this.modalService.open(StockBuyModalComponent);
-    buyModalReference.componentInstance.ticker = this.stockSymbol;
+    buyModalReference.componentInstance.stocksymbol = this.stockSymbol;
     buyModalReference.componentInstance.currentPrice =
       this.stockInfo?.stockPriceDetails?.c;
     buyModalReference.componentInstance.moneyInWallet = this.moneyInWallet;
+    //TODO: Add the current portfolio data
   }
 
   openSellModal() {
     const sellModalReference = this.modalService.open(StockSellModalComponent);
-    sellModalReference.componentInstance.ticker = this.stockSymbol;
+    sellModalReference.componentInstance.stocksymbol = this.stockSymbol;
     sellModalReference.componentInstance.currentPrice =
       this.stockInfo?.stockPriceDetails?.c;
+    sellModalReference.componentInstance.moneyInWallet = this.moneyInWallet;
+    //TODO: Add the current portfolio data
   }
 
   get stockInfo$() {
