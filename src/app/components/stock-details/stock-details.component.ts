@@ -18,6 +18,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { StockSellModalComponent } from '../utility-components/sell-modal/sell-modal.component';
 import { ActivatedRoute } from '@angular/router';
 import { WatchlistService } from '../../core/services/watchlist-service';
+import { PortfolioService } from '../../core/services/portfolio.service';
 
 @Component({
   selector: 'app-stock-details',
@@ -43,6 +44,12 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
   dateTimestamp: any;
   marketStatusString: string = '';
   isPresentInWatchlist: boolean = false;
+  displayBuyAlert = false;
+  displaySellAlert = false;
+  portfolioData: any = [];
+  canSellStock: boolean = false;
+  canSellStock$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+
   // isPresentInWatchlist: boolean = localStorage
   //   .getItem('watchlist')
   //   ?.includes(`${this.stockSymbol.toUpperCase()}`)
@@ -57,7 +64,8 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
     private stockSearchService: StockSearchService,
     private activatedRoute: ActivatedRoute,
     private modalService: NgbModal,
-    private watchlistService: WatchlistService
+    private watchlistService: WatchlistService,
+    private portfolioService: PortfolioService
   ) {}
 
   ngOnInit() {
@@ -87,6 +95,11 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
         .subscribe((results) => {
           if (results && Object.keys(results).length > 0) {
             this.handleSearchResults(results);
+            this.portfolioService.getPortfolio().subscribe({
+              next: (data) => {
+                this.portfolioData = data;
+              },
+            });
           }
         })
     );
@@ -124,21 +137,61 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
   }
 
   openBuyModal() {
+    this.displayBuyAlert = false;
+    this.displaySellAlert = false;
     const buyModalReference = this.modalService.open(StockBuyModalComponent);
     buyModalReference.componentInstance.stocksymbol = this.stockSymbol;
     buyModalReference.componentInstance.currentPrice =
       this.stockInfo?.stockPriceDetails?.c;
     buyModalReference.componentInstance.moneyInWallet = this.moneyInWallet;
+    buyModalReference.componentInstance.currentPortfolioData =
+      this.portfolioData;
+    console.log('Current portfolio data:', this.portfolioData);
+    buyModalReference.result.then(
+      (result) => {
+        this.displayBuyAlert = true;
+        this.canSellStock$.next(result);
+        console.log('Modal closed with:', result);
+        this.refreshPortfolioData();
+      },
+      (reason) => {
+        console.log('Modal dismissed with:', reason);
+      }
+    );
     //TODO: Add the current portfolio data
   }
 
   openSellModal() {
+    this.displayBuyAlert = false;
+    this.displaySellAlert = false;
     const sellModalReference = this.modalService.open(StockSellModalComponent);
     sellModalReference.componentInstance.stocksymbol = this.stockSymbol;
     sellModalReference.componentInstance.currentPrice =
       this.stockInfo?.stockPriceDetails?.c;
     sellModalReference.componentInstance.moneyInWallet = this.moneyInWallet;
+    sellModalReference.componentInstance.currentPortfolioData =
+      this.portfolioData;
     //TODO: Add the current portfolio data
+    sellModalReference.result.then(
+      (result) => {
+        this.displaySellAlert = true;
+      },
+      (reason) => {
+        console.log('Modal dismissed with:', reason);
+      }
+    );
+  }
+
+  refreshPortfolioData() {
+    this.portfolioService.getPortfolio().subscribe({
+      next: (data) => {
+        this.portfolioData = data;
+        console.log('Portfolio data refreshed:', this.portfolioData);
+      },
+      error: (error) => {
+        console.error('Error refreshing portfolio data:', error);
+      },
+    });
   }
 
   get stockInfo$() {

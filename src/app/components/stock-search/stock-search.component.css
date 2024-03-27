@@ -59,3 +59,25 @@
   outline: none;
   box-shadow: none;
 }
+
+.mat-autocomplete-panel {
+  position: absolute;
+  top: 100%; /* Align the top of the panel with the bottom of the input field */
+  left: 0;
+  right: 0;
+  z-index: 1000; /* Make sure it's above other elements */
+}
+
+::ng-deep .mat-autocomplete-panel {
+  width: 100%; /* Make sure the width is set to 100% of the input group */
+}
+
+/* ::ng-deep .cdk-overlay-container {
+  width: auto;
+  max-width: calc(
+    100% - 32px
+  ); /* 
+  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 0 0 20px 20px;
+  z-index: 1000;
+} */

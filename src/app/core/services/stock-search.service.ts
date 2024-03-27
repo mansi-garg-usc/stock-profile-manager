@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { computed, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {
   forkJoin,
@@ -16,6 +16,13 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root',
 })
 export class StockSearchService {
+  dateToday = new Date();
+  dateTodayValue: string = '';
+  sixMonthsPastDate = new Date();
+  sixMonthsPastDateValue: string = '';
+  pastYear = new Date();
+  pastYearValue: string = '';
+
   private updateInterval?: number;
 
   private currentStockSymbol = new BehaviorSubject<string | null>(null);
@@ -39,9 +46,34 @@ export class StockSearchService {
   private companyTrends = new BehaviorSubject<any>([]);
   exposedCompanyTrends = this.companyTrends.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.computeDates();
+  }
+
+  ngOnInit() {
+    this.computeDates();
+  }
 
   private baseUrl = 'http://localhost:8000/api';
+
+  formatDate(dateToBeFormatted: Date) {
+    const year = dateToBeFormatted.getFullYear();
+    const month = (dateToBeFormatted.getMonth() + 1)
+      .toString()
+      .padStart(2, '0');
+    const day = dateToBeFormatted.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  computeDates() {
+    this.sixMonthsPastDate.setMonth(this.sixMonthsPastDate.getMonth() - 6);
+    this.sixMonthsPastDate.setDate(this.sixMonthsPastDate.getDate() - 1);
+    this.pastYear.setMonth(this.pastYear.getMonth() - 24);
+    this.pastYear.setDate(this.pastYear.getDate() - 1);
+    this.dateTodayValue = this.formatDate(this.dateToday);
+    this.sixMonthsPastDateValue = this.formatDate(this.sixMonthsPastDate);
+    this.pastYearValue = this.formatDate(this.pastYear);
+  }
 
   searchAutocomplete(query: string): Observable<string[]> {
     if (!query.trim()) {
@@ -75,7 +107,20 @@ export class StockSearchService {
     const companyPeers = this.http.get(
       `${this.baseUrl}/peers?symbol=${encodeURIComponent(stock)}`
     );
-    const result = forkJoin({ companyInfo, stockPriceDetails, companyPeers });
+    console.log('today', this.dateTodayValue);
+    console.log('past year', this.pastYearValue);
+
+    const chartsTabData = this.http.get(
+      `${this.baseUrl}/history?symbol=${encodeURIComponent(stock)}&fromDate=${
+        this.pastYearValue
+      }&toDate=${this.dateTodayValue}`
+    );
+    const result = forkJoin({
+      companyInfo,
+      stockPriceDetails,
+      companyPeers,
+      chartsTabData,
+    });
     // const news = this.fetchNews(stock);
     result.subscribe({
       next: (response) => {
@@ -83,6 +128,7 @@ export class StockSearchService {
           companyInfo: response.companyInfo,
           stockPriceDetails: response.stockPriceDetails,
           companyPeers: response.companyPeers,
+          chartsTabData: response.chartsTabData,
         });
       },
       error: (error) => {
@@ -142,13 +188,15 @@ export class StockSearchService {
 
     // Set up a new interval
     this.updateInterval = window.setInterval(() => {
-      this.searchStock(stockSymbol).subscribe({
+      this.fetchStockPriceDetails(stockSymbol).subscribe({
         next: (response) => {
-          this.updateSearchResults({
-            companyInfo: response.companyInfo,
-            stockPriceDetails: response.stockPriceDetails,
-            companyPeers: response.companyPeers,
-          });
+          const currentSearchResult = this.searchResult.value;
+          const updatedSearchResult = {
+            ...currentSearchResult,
+            stockPriceDetails: response, // Update the stockPriceDetails with the new response
+          };
+          this.searchResult.next(updatedSearchResult);
+
           console.log('Data updated', response);
           // Handle the response if needed
         },
@@ -164,6 +212,10 @@ export class StockSearchService {
     }
   }
 
+  fetchStockPriceDetails(stock: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/latestPrice?symbol=${stock}`);
+  }
+
   fetchNews(): Observable<any> {
     return this.exposedCurrentStockSymbol.pipe(
       switchMap((stock) => {
@@ -173,7 +225,7 @@ export class StockSearchService {
         } else {
           return this.http
             .get<any[]>(
-              `${this.baseUrl}/news?symbol=${encodeURIComponent(stock)}`
+              `${this.baseUrl}/news?symbol=${encodeURIComponent(stock)}&fromDate=${this.sixMonthsPastDateValue}&toDate=${this.dateTodayValue}`
             )
             .pipe(
               map((response) => {

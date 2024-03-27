@@ -1,6 +1,7 @@
 <div class="modal-header">
     <h5 class="modal-title">{{ stocksymbol }}</h5>
-    <button type="button" class="close" aria-label="Close"  data-bs-dismiss="modal" (click)="activeModal.dismiss('Cross click')">
+    <button type="button" class="close" aria-label="Close" data-bs-dismiss="modal"
+        (click)="activeModal.dismiss('Cross click')">
         <span aria-hidden="true">&times;</span>
     </button>
 </div>
@@ -17,6 +18,8 @@
                 <label for="quantity">Quantity:</label>
                 <input type="number" class="form-control" [(ngModel)]="quantity">
             </div>
+            <p class="text-danger" *ngIf="!sellValidation()">You cannot sell the stocks that you don't have!</p>
+
         </div>
     </div>
 </div>
@@ -25,5 +28,5 @@
     <div class="col-12">
         <p class="mb-0">Total: <strong>{{ getTotal() }}</strong></p>
     </div>
-    <button type="button" class="btn btn-success"  data-bs-dismiss="modal"  (click)="sellStock()">Sell</button>
+    <button type="button" class="btn btn-success" data-bs-dismiss="modal" [disabled]="!sellValidation() || this.quantity<=0" (click)="sellStock()">Sell</button>
 </div>

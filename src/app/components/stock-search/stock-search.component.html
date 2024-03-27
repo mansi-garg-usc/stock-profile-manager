@@ -18,8 +18,10 @@
                 </div>
             </div>
             <div>
-
                 <mat-autocomplete #auto="matAutocomplete" (optionSelected)="searchStock($event)">
+                    <mat-option *ngIf="(isAutocompleteLoading | async) && !(filteredOptions | async)?.length">
+                        <mat-progress-spinner mode="indeterminate" diameter="20"></mat-progress-spinner>
+                    </mat-option>
                     <mat-option *ngFor="let option of filteredOptions | async" [value]="option">{{ option
                         }}</mat-option>
                 </mat-autocomplete>

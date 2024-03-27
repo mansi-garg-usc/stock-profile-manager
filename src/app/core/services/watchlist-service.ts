@@ -27,9 +27,11 @@ export class WatchlistService {
   private baseUrl = 'http://localhost:8000/api';
 
   fetchWatchlist(): Observable<any[]> {
+    console.log('inside fetchWatchlist in service');
     return this.http.get<any[]>(`${this.baseUrl}/getwatchlist`).pipe(
       tap((entries) => {
         this.watchlistEntries.next(entries);
+        console.log('watchlistEntries in service:', this.watchlistEntries);
       }),
       catchError((error) => {
         console.error('Error fetching watchlist:', error);
@@ -96,6 +98,7 @@ export class WatchlistService {
   // }
 
   getWatchlistData(): Observable<any> {
+    console.log('inside getWatchlistData in service')
     // Make an HTTP GET request to the backend API to fetch the watchlist
     return this.watchlistEntries.pipe(
       map((watchlistValue: any) => {
@@ -108,6 +111,9 @@ export class WatchlistService {
           const stockPriceDetails = this.http.get(
             `${this.baseUrl}/latestPrice?symbol=${encodeURIComponent(stock)}`
           );
+          console.log('watchlistEntry:', watchlistEntry);
+          console.log('companyInfo:', companyInfo);
+          console.log('stockPriceDetails:', stockPriceDetails);
           return forkJoin({ companyInfo, stockPriceDetails });
         });
 
@@ -128,6 +134,7 @@ export class WatchlistService {
       tap((entries) => {
         // Update BehaviorSubject with the transformed results
         this.watchlistDisplayData.next(entries);
+        console.log('watchlistDisplayData in service:', this.watchlistDisplayData);
       })
     );
   }

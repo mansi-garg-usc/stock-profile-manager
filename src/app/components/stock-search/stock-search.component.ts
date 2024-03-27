@@ -8,10 +8,24 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
-import { Observable, Subscription, of, startWith, switchMap } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  Subscription,
+  catchError,
+  debounceTime,
+  filter,
+  finalize,
+  of,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { StockSearchService } from '../../core/services/stock-search.service';
 import { StockDetailsComponent } from '../stock-details/stock-details.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-stock-search',
@@ -24,6 +38,7 @@ import { ActivatedRoute, Router } from '@angular/router';
     MatButtonModule,
     ReactiveFormsModule,
     MatCardModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './stock-search.component.html',
   styleUrls: ['./stock-search.component.css'],
@@ -31,17 +46,21 @@ import { ActivatedRoute, Router } from '@angular/router';
 export class StockSearchComponent implements OnInit, OnDestroy {
   @Input() stockInfo: any;
 
-  route: ActivatedRoute = inject(ActivatedRoute);
+  // route: ActivatedRoute = inject(ActivatedRoute);
   companyPeers: any;
   selectedStockSymbol: string = '';
   stockFormControl = new FormControl();
-  filteredOptions: Observable<string[]> = of([]);
+  filteredOptions: Observable<string[] | null> = of([]);
   private subscription: Subscription = new Subscription();
   watchlist = localStorage.setItem('watchlist', JSON.stringify([]));
+  searchResultsDisplayed: boolean = false;
+  isAutocompleteLoading = new BehaviorSubject<boolean>(false);
 
   constructor(
     private stockSearchService: StockSearchService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute = inject(ActivatedRoute)
   ) {
     this.selectedStockSymbol = this.route.snapshot.params['ticker'];
   }
@@ -49,9 +68,11 @@ export class StockSearchComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.filteredOptions = this.stockFormControl.valueChanges.pipe(
       startWith(''),
-      // debounceTime(300),
-      switchMap((value) => this.stockSearchService.searchAutocomplete(value))
+      debounceTime(300),
+      switchMap(value => this.fetchAutocompleteOptions(value)),
+      filter(options => Array.isArray(options) && options.length > 0)
     );
+  
 
     this.subscription.add(
       this.stockSearchService.exposedSearchResult.subscribe({
@@ -62,6 +83,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
                   companyInfo: results.companyInfo,
                   stockPriceDetails: results.stockPriceDetails,
                   companyPeers: results.companyPeers,
+                  chartsData: results.chartsData,
                 }
               : null;
           console.log('Stock Info in search component:', this.stockInfo);
@@ -71,9 +93,25 @@ export class StockSearchComponent implements OnInit, OnDestroy {
     );
   }
 
+  fetchAutocompleteOptions(searchTerm: string): Observable<string[]> {
+    if (!searchTerm.trim()) {
+      return of([]);
+    }
+  
+    this.isAutocompleteLoading.next(true); // Start loading
+  
+    return this.stockSearchService.searchAutocomplete(searchTerm.trim()).pipe(
+      catchError(() => of([])), // Handle errors gracefully by returning an empty array
+      finalize(() => this.isAutocompleteLoading.next(false)) // Ensure loading is stopped
+    );
+  }
+  
+
   searchStock(event?: any) {
     let stock = '';
-    if (event && event.option && event.option.value) {
+    if (event instanceof MatAutocompleteSelectedEvent) {
+      stock = event.option.value;
+    } else if (event && event.option && event.option.value) {
       stock = event.option.value;
     } else if (typeof event === 'string') {
       stock = event;
@@ -101,7 +139,14 @@ export class StockSearchComponent implements OnInit, OnDestroy {
             results &&
             results?.hasOwnProperty('companyInfo') &&
             results.companyPeers,
+            chartsData: 
+            results &&
+            results?.hasOwnProperty('companyInfo') &&
+            results.chartsData,
         };
+        this.searchResultsDisplayed = true;
+        this.isAutocompleteLoading.next(false);
+        // this.filteredOptions = of([]);
       },
       error: (error: any) => {
         console.error('Error fetching stock data:', error);
@@ -122,5 +167,9 @@ export class StockSearchComponent implements OnInit, OnDestroy {
   clearSearchResults() {
     this.stockFormControl.setValue('');
     this.stockSearchService.clearSearchResults();
+    this.searchResultsDisplayed = false;
+    // this.filteredOptions = of([]); // Reset filtered options to prevent empty dropdown
+    // this.filteredOptions = of([]);
+    // this.stockInfo = null;
   }
 }

@@ -6,6 +6,14 @@
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
+    <div *ngIf="displaySellAlert" class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ stockSymbol }} sold successfully.
+        <button type="button" class="btn-close" (click)="displaySellAlert = false"></button>
+    </div>
+    <div *ngIf="displayBuyAlert" class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ stockSymbol }} bought successfully.
+        <button type="button" class="btn-close" (click)="displayBuyAlert = false"></button>
+    </div>
     <div class="row">
         <!-- Company Info Column -->
         <div class="col-12 col-sm-4">

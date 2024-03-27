@@ -32,7 +32,7 @@ export class StockBuyModalComponent {
       console.log('Current Price:', this.currentPrice);
       console.log('Money in Wallet:', this.moneyInWallet);
       this.oldWalletMoney = this.moneyInWallet;
-      this.currentPortfolioData.some((entry: any) => {
+      this.currentPortfolioData?.some((entry: any) => {
         if (
           entry.stocksymbol.toUpperCase() === this.stocksymbol.toUpperCase()
         ) {

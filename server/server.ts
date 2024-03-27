@@ -30,6 +30,26 @@ const finnhub_api_key = 'cnih581r01qj1g5q4jlgcnih581r01qj1g5q4jm0';
 const polygon_api_key = 'Veu4EyzzJTduRuvf0Y1woy5mwtn1mMIA';
 const port = 8000;
 
+let dateToday = formatDate(new Date());
+
+let previousDate = new Date();
+previousDate.setMonth(previousDate.getMonth() - 6);
+previousDate.setDate(previousDate.getDate() - 1);
+
+let previousYear = new Date();
+previousYear.setMonth(previousYear.getMonth() - 24);
+previousYear.setDate(previousYear.getDate() - 1);
+
+let previousDateValue = formatDate(previousDate);
+let previousYearValue = formatDate(previousYear);
+
+function formatDate(dateToBeFormatted: Date) {
+  const year = dateToBeFormatted.getFullYear();
+  const month = (dateToBeFormatted.getMonth() + 1).toString().padStart(2, '0');
+  const day = dateToBeFormatted.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 async function startServer() {
   try {
     // Connect to MongoDB
@@ -89,6 +109,28 @@ async function startServer() {
       } catch (error) {
         res.status(500).send(`Error retrieving latest price - ${error}`);
       }
+    });
+
+    app.get('/api/history', async (req, res) => {
+      let fromDate = req.query['fromDate'];
+      let toDate = req.query['toDate'];
+      let tickerSymbol = req.query['symbol'];
+      const url = `https://api.polygon.io/v2/aggs/ticker/${tickerSymbol}/range/1/day/${fromDate}/${toDate}?adjusted=true&sort=asc&apiKey=${polygon_api_key}`;
+
+      console.log('Requesting URL:', url); // Log the URL being requested
+
+      await axios
+        .get(url)
+        .then((response: any) => {
+          res.json(response.data);
+          console.log('fromDate:', fromDate);
+          console.log('toDate:', toDate);
+          console.log('History Data:', response.data);
+        })
+        .catch((error: any) => {
+          console.error('Axios Error:', error.message); // Log detailed error message
+          res.status(500).send(`Error retrieving history - ${error.message}`);
+        });
     });
 
     // Companies recommendation trends
@@ -179,12 +221,14 @@ async function startServer() {
 
     // Company's news
     const today = new Date();
-    const toDate = today.toISOString().split('T')[0];
-    const fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split('T')[0];
+    // const toDate = today.toISOString().split('T')[0];
+    // const fromDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
+    // .toISOString()
+    // .split('T')[0];
     app.get('/api/news', async (req, res) => {
       const tickerSymbol = req.query['symbol'];
+      const fromDate = req.query['fromDate'];
+      const toDate = req.query['toDate'];
       const apiKey = finnhub_api_key;
       try {
         const finnhubResponse = await axios.get(
@@ -199,6 +243,9 @@ async function startServer() {
           }
         );
         res.json(finnhubResponse.data);
+        // console.log('News Data:', finnhubResponse.data);
+        // console.log('Previous Date:', previousDate);
+        // console.log('Today:', dateToday);
       } catch (error) {
         res.status(500).send(`Error retrieving news - ${error}`);
       }

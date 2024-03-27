@@ -45,10 +45,24 @@ export class StockSellModalComponent {
     }
   }
 
+  sellValidation(): boolean {
+    // if (this.quantity <= 0) {
+    //   return false;
+    // }
+    if (this.quantity > this.currentPortfolioData[this.stockIndexInPortfolio].quantity) {
+      return false;
+    }
+    return true;
+  }
+
   sellStock(): void {
     console.log('Selling stock');
+    console.log(
+      'Current Portfolio Data on sell stock:',
+      this.currentPortfolioData
+    );
     if (
-      this.currentPortfolioData[this.stockIndexInPortfolio].quantity >=
+      this.currentPortfolioData[this.stockIndexInPortfolio].quantity ==
       this.quantity
     ) {
       console.log('Selling stock');
@@ -63,7 +77,10 @@ export class StockSellModalComponent {
           console.error('Error selling stock:', error);
         },
       });
-    } else {
+    } else if (
+      this.currentPortfolioData[this.stockIndexInPortfolio].quantity >
+      this.quantity
+    ) {
       let totalquantityafterbuy =
         this.currentPortfolioData[this.stockIndexInPortfolio].quantity -
         this.quantity;
