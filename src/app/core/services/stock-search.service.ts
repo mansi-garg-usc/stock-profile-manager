@@ -80,7 +80,7 @@ export class StockSearchService {
     return this.previousRouteData;
   }
 
-  private baseUrl = 'http://localhost:8000/api';
+  private baseUrl = '/api';
 
   formatDate(dateToBeFormatted: Date) {
     const year = dateToBeFormatted.getFullYear();
@@ -101,7 +101,7 @@ export class StockSearchService {
     this.pastYearValue = this.formatDate(this.pastYear);
   }
 
-  searchAutocomplete(query: string): Observable<string[]> {
+  searchAutocomplete(query: string): Observable<any> {
     if (!query.trim()) {
       return of([]);
     }
@@ -110,7 +110,10 @@ export class StockSearchService {
       .pipe(
         map((response) => {
           console.log('Autocomplete Response:', response); // Log the response
-          return response.map((stock) => stock.displaySymbol);
+          return response.map((stock) => ({
+            description: stock.description,
+            displaySymbol: stock.displaySymbol,
+          }));
         }),
         catchError((error) => {
           console.error('Error fetching autocomplete data:', error);
@@ -136,16 +139,16 @@ export class StockSearchService {
     console.log('today', this.dateTodayValue);
     console.log('past year', this.pastYearValue);
 
-    // const chartsTabData = this.http.get(
-    //   `${this.baseUrl}/history?symbol=${encodeURIComponent(stock)}&fromDate=${
-    //     this.pastYearValue
-    //   }&toDate=${this.dateTodayValue}`
-    // );
+    const chartsTabData = this.http.get(
+      `${this.baseUrl}/history?symbol=${encodeURIComponent(stock)}&fromDate=${
+        this.pastYearValue
+      }&toDate=${this.dateTodayValue}`
+    );
     const result = forkJoin({
       companyInfo,
       stockPriceDetails,
       companyPeers,
-      // chartsTabData,
+      chartsTabData,
     });
     // const news = this.fetchNews(stock);
     result.subscribe({
@@ -155,8 +158,8 @@ export class StockSearchService {
           companyInfo: response.companyInfo,
           stockPriceDetails: response.stockPriceDetails,
           companyPeers: response.companyPeers,
-          // chartsTabData: response.chartsTabData,
-          chartsTabData: {},
+          chartsTabData: response.chartsTabData,
+          // chartsTabData: {},
         });
       },
       error: (error) => {
@@ -397,6 +400,5 @@ export class StockSearchService {
     this.companyEarnings?.next(null);
     this.companyTrends?.next(null);
     this.searchResult?.next(null);
-
   }
 }
