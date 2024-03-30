@@ -44,6 +44,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
   dateTimestamp: any;
   marketStatusString: string = '';
   isPresentInWatchlist: boolean = false;
+  indexInWatchlist: number = -1;
   displayBuyAlert = false;
   displaySellAlert = false;
   portfolioData: any = [];
@@ -100,7 +101,10 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
                 this.portfolioData = data;
               },
               error: (error) => {
-                console.error('Error fetching portfolio data in stock details:', error);
+                console.error(
+                  'Error fetching portfolio data in stock details:',
+                  error
+                );
               },
             });
           }
@@ -112,9 +116,10 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
         (watchlistEntries) => {
           console.log('Watchlist entries:', watchlistEntries);
           // Check if the current stock symbol is present in the watchlist
-          this.isPresentInWatchlist = watchlistEntries.some(
-            (entry: any) => entry?.symbol === this.stockSymbol.toUpperCase()
-          );
+          this.isPresentInWatchlist = watchlistEntries.some((entry: any) => {
+            entry?.symbol === this.stockSymbol.toUpperCase();
+            this.indexInWatchlist = watchlistEntries.indexOf(entry);
+          });
         }
       );
 
@@ -146,7 +151,10 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
     buyModalReference.componentInstance.stocksymbol = this.stockSymbol;
     buyModalReference.componentInstance.currentPrice =
       this.stockInfo?.stockPriceDetails?.c;
-    // buyModalReference.componentInstance.moneyInWallet = this.moneyInWallet;
+    buyModalReference.componentInstance.stockPresentInPortfolio =
+      this.isPresentInWatchlist;
+    buyModalReference.componentInstance.stockIndexInPortfolio =
+      this.indexInWatchlist;
     buyModalReference.componentInstance.currentPortfolioData =
       this.portfolioData;
     console.log('Current portfolio data:', this.portfolioData);
@@ -171,7 +179,6 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
     sellModalReference.componentInstance.stocksymbol = this.stockSymbol;
     sellModalReference.componentInstance.currentPrice =
       this.stockInfo?.stockPriceDetails?.c;
-    // sellModalReference.componentInstance.moneyInWallet = this.moneyInWallet;
     sellModalReference.componentInstance.currentPortfolioData =
       this.portfolioData;
     //TODO: Add the current portfolio data

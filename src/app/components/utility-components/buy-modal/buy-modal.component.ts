@@ -14,12 +14,11 @@ import { Subscription } from 'rxjs';
 export class StockBuyModalComponent {
   @Input() stocksymbol!: string;
   @Input() currentPrice!: number;
-  // @Input() moneyInWallet!: number;
   @Input() currentPortfolioData: any;
+  @Input() stockPresentInPortfolio: boolean = false;
+  @Input() stockIndexInPortfolio: number = -1;
   oldWalletMoney: any = 0;
   quantity: number = 0;
-  stockPresentInPortfolio: boolean = false;
-  stockIndexInPortfolio: number = -1;
   private walletSubscription!: Subscription;
   notEnoughMoneyError: boolean = false;
 
