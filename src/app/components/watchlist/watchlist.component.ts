@@ -17,6 +17,7 @@ export class WatchlistComponent {
   watchlistInfo: any[] = [];
   // isLoading: boolean = true;
   isEmpty: boolean = false;
+  isLoading: boolean = true;
 
   showEmptyWatchlistMessage = new BehaviorSubject<boolean>(false);
 
@@ -25,31 +26,36 @@ export class WatchlistComponent {
     private router: Router
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     // Subscribe to the exposedWatchlistEntries observable to get the latest watchlist info
     // this.watchlistService.exposedWatchlistEntries.subscribe((infoArray) => {
     //   this.watchlistInfo = infoArray;
     //   this.showEmptyWatchlistMessage.next(this.watchlistInfo.length === 0);
     //   console.log('Watchlist Info:', this.watchlistInfo);
     // });
-    // this.isLoading = true;
+    this.isLoading = true;
 
     // Initial fetch of the watchlist
     console.log('inside watchlist init');
     console.log('watchlist entires', this.watchlistEntries);
     // console.log('isloading', this.isLoading);
-    this.fetchWatchlist();
+    await this.fetchWatchlist();
   }
-  ngOnChanges(changes: SimpleChanges) {
+
+  async ngOnChanges(changes: SimpleChanges) {
     // Check if watchlistEntries input has changed
 
     // this.isLoading = true;
     if (changes['watchlistEntries']) {
-      this.fetchWatchlist();
+      await this.fetchWatchlist();
     }
   }
 
-  fetchWatchlist(): void {
+  sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async fetchWatchlist(): Promise<void> {
     console.log('Fetching watchlist data...');
     console.log('watchlist entires', this.watchlistEntries);
     // console.log('isloading', this.isLoading);
@@ -70,17 +76,16 @@ export class WatchlistComponent {
           this.watchlistInfo = infoArray;
         }
         // this.showEmptyWatchlistMessage.next(this.watchlistInfo.length === 0);
-        // this.isLoading = false;
       },
       error: (error) => {
-        // this.isLoading = false;
         console.error('Error fetching watchlist data:', error);
       },
       complete: () => {
         console.log('Watchlist data fetch complete');
-        // this.isLoading = false;
       },
     });
+    await this.sleep(500); // TODO
+    this.isLoading = false;
   }
   searchStock(symbol: string): void {
     this.router.navigate(['/search', symbol]);
@@ -114,12 +119,15 @@ export class WatchlistComponent {
   removeFromWatchlist(symbol: string): void {
     this.watchlistService.removeFromWatchlist(symbol).subscribe({
       next: (updatedWatchlist) => {
-        // The updated watchlist is now reflected in watchlistInfo
         this.watchlistInfo = updatedWatchlist;
-        console.log(`Removed ${symbol} and updated watchlist.`);
+
+        console.log(
+          `Removed ${symbol} from watchlist. Fetching updated watchlist data...`
+        );
       },
-      error: (error) =>
-        console.error(`Error removing ${symbol} from watchlist:`, error),
+      error: (error) => {
+        console.error(`Error removing ${symbol} from watchlist:`, error);
+      },
     });
   }
 }
