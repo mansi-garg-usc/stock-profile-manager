@@ -36,8 +36,8 @@ export class ChartsComponent {
 
   ngOnInit() {
     this.stockInfo$.subscribe((stockInfo) => {
-      if (stockInfo && stockInfo.chartData) {
-        this.createChart(stockInfo.chartData);
+      if (stockInfo && stockInfo.chartsTabData) {
+        this.createChart(stockInfo.chartsTabData);
         // const ohlcData = this.getOHLC(stockInfo.stockPriceDetails);
         // const volumeData = this.getVolume(stockInfo.stockPriceDetails); // Assume you have a similar method for volume
         // this.createChart(ohlcData, volumeData);

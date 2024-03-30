@@ -82,7 +82,9 @@ export class WatchlistComponent {
       },
     });
   }
-
+  searchStock(symbol: string): void {
+    this.router.navigate(['/search', symbol]);
+  }
   // removeFromWatchlist(symbol: string): void {
   //   // Call the service method to remove the symbol from the watchlist
   //   this.watchlistService.removeFromWatchlist(symbol.toUpperCase()).subscribe({
@@ -112,15 +114,12 @@ export class WatchlistComponent {
   removeFromWatchlist(symbol: string): void {
     this.watchlistService.removeFromWatchlist(symbol).subscribe({
       next: (updatedWatchlist) => {
-        // The service has updated the BehaviorSubject with the new watchlist data
-        console.log(
-          `Removed ${symbol} from watchlist. Fetching updated watchlist data...`
-        );
-        // Now you could manually call getWatchlistData if needed or rely on the automatic update from the service
+        // The updated watchlist is now reflected in watchlistInfo
+        this.watchlistInfo = updatedWatchlist;
+        console.log(`Removed ${symbol} and updated watchlist.`);
       },
-      error: (error) => {
-        console.error(`Error removing ${symbol} from watchlist:`, error);
-      },
+      error: (error) =>
+        console.error(`Error removing ${symbol} from watchlist:`, error),
     });
   }
 }

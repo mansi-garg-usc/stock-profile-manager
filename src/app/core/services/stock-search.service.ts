@@ -9,13 +9,18 @@ import {
   throwError,
   of,
   switchMap,
+  filter,
 } from 'rxjs';
 import { BehaviorSubject } from 'rxjs';
+import { charts } from 'highcharts';
+import { NavigationEnd, Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
 })
 export class StockSearchService {
+  private previousRoute: string | null = null;
+  private previousRouteData: any = null;
   dateToday = new Date();
   dateTodayValue: string = '';
   sixMonthsPastDate = new Date();
@@ -46,12 +51,33 @@ export class StockSearchService {
   private companyTrends = new BehaviorSubject<any>([]);
   exposedCompanyTrends = this.companyTrends.asObservable();
 
-  constructor(private http: HttpClient) {
+  private companyInfoGlobal: any;
+
+  constructor(private http: HttpClient, private router: Router) {
     this.computeDates();
+    this.trackNavigationEnd();
   }
 
-  ngOnInit() {
-    this.computeDates();
+  private trackNavigationEnd() {
+    this.router.events
+      .pipe(
+        filter(
+          (event): event is NavigationEnd => event instanceof NavigationEnd
+        ),
+        tap((event: NavigationEnd) => {
+          // Now 'event' is strictly typed as NavigationEnd, and 'urlAfterRedirects' is accessible
+          this.previousRoute = event.urlAfterRedirects || event.url;
+        })
+      )
+      .subscribe();
+  }
+
+  setPreviousRouteData(data: any): void {
+    this.previousRouteData = data;
+  }
+
+  getPreviousRouteData(): any {
+    return this.previousRouteData;
   }
 
   private baseUrl = 'http://localhost:8000/api';
@@ -110,25 +136,27 @@ export class StockSearchService {
     console.log('today', this.dateTodayValue);
     console.log('past year', this.pastYearValue);
 
-    const chartsTabData = this.http.get(
-      `${this.baseUrl}/history?symbol=${encodeURIComponent(stock)}&fromDate=${
-        this.pastYearValue
-      }&toDate=${this.dateTodayValue}`
-    );
+    // const chartsTabData = this.http.get(
+    //   `${this.baseUrl}/history?symbol=${encodeURIComponent(stock)}&fromDate=${
+    //     this.pastYearValue
+    //   }&toDate=${this.dateTodayValue}`
+    // );
     const result = forkJoin({
       companyInfo,
       stockPriceDetails,
       companyPeers,
-      chartsTabData,
+      // chartsTabData,
     });
     // const news = this.fetchNews(stock);
     result.subscribe({
-      next: (response) => {
+      next: (response: any) => {
+        this.companyInfoGlobal = response.companyInfo;
         this.updateSearchResults({
           companyInfo: response.companyInfo,
           stockPriceDetails: response.stockPriceDetails,
           companyPeers: response.companyPeers,
-          chartsTabData: response.chartsTabData,
+          // chartsTabData: response.chartsTabData,
+          chartsTabData: {},
         });
       },
       error: (error) => {
@@ -225,7 +253,11 @@ export class StockSearchService {
         } else {
           return this.http
             .get<any[]>(
-              `${this.baseUrl}/news?symbol=${encodeURIComponent(stock)}&fromDate=${this.sixMonthsPastDateValue}&toDate=${this.dateTodayValue}`
+              `${this.baseUrl}/news?symbol=${encodeURIComponent(
+                stock
+              )}&fromDate=${this.sixMonthsPastDateValue}&toDate=${
+                this.dateTodayValue
+              }`
             )
             .pipe(
               map((response) => {
@@ -361,5 +393,10 @@ export class StockSearchService {
     this.searchResult?.next(null);
     this.newsResult?.next(null);
     this.companyPeers?.next(null);
+    this.companySentiment?.next(null);
+    this.companyEarnings?.next(null);
+    this.companyTrends?.next(null);
+    this.searchResult?.next(null);
+
   }
 }

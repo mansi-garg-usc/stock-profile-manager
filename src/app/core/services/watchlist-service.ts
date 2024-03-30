@@ -22,7 +22,9 @@ export class WatchlistService {
   private watchlistDisplayData = new BehaviorSubject<any>([]);
   exposedWatchlistDisplayData = this.watchlistDisplayData.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.fetchWatchlist().subscribe();
+  }
 
   private baseUrl = 'http://localhost:8000/api';
 
@@ -98,43 +100,50 @@ export class WatchlistService {
   // }
 
   getWatchlistData(): Observable<any> {
-    console.log('inside getWatchlistData in service')
-    // Make an HTTP GET request to the backend API to fetch the watchlist
+    console.log('inside getWatchlistData in service');
+
     return this.watchlistEntries.pipe(
-      map((watchlistValue: any) => {
+      switchMap((watchlistValue: any) => {
         // Assuming watchlistValue is an array of stock symbols
+        if (!watchlistValue || watchlistValue.length === 0) {
+          // Handle the case where the watchlist is empty
+          return of([]); // Return an empty observable array
+        }
+
         const apiCalls = watchlistValue.map((watchlistEntry: any) => {
           const stock = watchlistEntry.symbol; // Modify this if the structure is different
-          const companyInfo = this.http.get(
-            `${this.baseUrl}/company?symbol=${encodeURIComponent(stock)}`
+          return forkJoin({
+            companyInfo: this.http.get(
+              `${this.baseUrl}/company?symbol=${encodeURIComponent(stock)}`
+            ),
+            stockPriceDetails: this.http.get(
+              `${this.baseUrl}/latestPrice?symbol=${encodeURIComponent(stock)}`
+            ),
+          }).pipe(
+            map((result: any) => ({
+              symbol: result.companyInfo.ticker, // Adjust according to your actual API response structure
+              companyName: result.companyInfo.name, // Adjust according to your actual API response structure
+              stockPrice: result.stockPriceDetails.c, // Adjust according to your actual API response structure
+              changePercentage: result.stockPriceDetails.dp, // Adjust according to your actual API response structure
+              changeAmount: result.stockPriceDetails.d, // Adjust according to your actual API response structure
+            }))
           );
-          const stockPriceDetails = this.http.get(
-            `${this.baseUrl}/latestPrice?symbol=${encodeURIComponent(stock)}`
-          );
-          console.log('watchlistEntry:', watchlistEntry);
-          console.log('companyInfo:', companyInfo);
-          console.log('stockPriceDetails:', stockPriceDetails);
-          return forkJoin({ companyInfo, stockPriceDetails });
         });
 
-        // Use forkJoin to subscribe to all API calls at once
+        // Use forkJoin to handle all API calls at once
         return forkJoin(apiCalls);
       }),
-      // Flatten the double Observable into a single level
-      switchMap((apiCallsResult) => apiCallsResult),
-      map((resultsArray: any) =>
-        resultsArray.map((result: any) => ({
-          symbol: result.companyInfo.ticker, // Modify this if the structure is different
-          companyName: result.companyInfo.name, // Modify this if the structure is different
-          stockPrice: result.stockPriceDetails.c, // Modify this if the structure is different
-          changePercentage: result.stockPriceDetails.dp, // Modify this if the structure is different
-          changeAmount: result.stockPriceDetails.d, // Modify this if the structure is different
-        }))
-      ),
       tap((entries) => {
         // Update BehaviorSubject with the transformed results
         this.watchlistDisplayData.next(entries);
-        console.log('watchlistDisplayData in service:', this.watchlistDisplayData);
+        console.log(
+          'watchlistDisplayData in service:',
+          this.watchlistDisplayData
+        );
+      }),
+      catchError((error) => {
+        console.error('Error fetching watchlist data:', error);
+        return throwError(() => new Error('Error fetching watchlist data'));
       })
     );
   }
@@ -158,40 +167,20 @@ export class WatchlistService {
   //     });
   // }
 
-  removeFromWatchlist(symbol: string): Observable<any[]> {
-    // Remove the symbol from the current state of watchlistEntries
-    const currentWatchlist = this.watchlistEntries
-      .getValue()
-      .filter((item: any) => item.symbol !== symbol);
-
-    // Update the BehaviorSubject with the new state
-    this.watchlistEntries.next(currentWatchlist);
-
+  removeFromWatchlist(symbol: string): Observable<any> {
     // Make a backend call to remove the symbol from the watchlist
-    return this.http
-      .get<any[]>(`${this.baseUrl}/removewatchlist`, {
-        params: { symbol: symbol },
+    return this.http.get<any[]>(`${this.baseUrl}/removewatchlist`, { params: { symbol: symbol } }).pipe(
+      tap(() => {
+        // Update the watchlistEntries BehaviorSubject after successful removal
+        const updatedWatchlist = this.watchlistEntries.getValue().filter((item: any) => item.symbol !== symbol);
+        this.watchlistEntries.next(updatedWatchlist);
+      }),
+      switchMap(() => this.getWatchlistData()), // Fetch the updated watchlist data
+      catchError((error) => {
+        console.error('Error removing from watchlist:', error);
+        return throwError(() => new Error('Error removing from watchlist'));
       })
-      .pipe(
-        tap(() => {
-          // After the removal, we fetch the updated watchlist data
-          this.getWatchlistData().subscribe(
-            (updatedEntries) => {
-              this.watchlistDisplayData.next(updatedEntries);
-            },
-            (error) => {
-              console.error(
-                'Error fetching updated watchlist after removal:',
-                error
-              );
-            }
-          );
-        }),
-        catchError((error) => {
-          console.error('Error removing from watchlist:', error);
-          return throwError(() => new Error('Error removing from watchlist'));
-        })
-      );
+    );
   }
 
   updateWatchlistEntries(entry: WatchlistEntry | null) {

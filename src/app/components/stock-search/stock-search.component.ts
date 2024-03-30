@@ -55,57 +55,77 @@ export class StockSearchComponent implements OnInit, OnDestroy {
   watchlist = localStorage.setItem('watchlist', JSON.stringify([]));
   searchResultsDisplayed: boolean = false;
   isAutocompleteLoading = new BehaviorSubject<boolean>(false);
+  tickerUrlParam: any = '';
 
   constructor(
     private stockSearchService: StockSearchService,
     private router: Router,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute = inject(ActivatedRoute)
-  ) {
-    this.selectedStockSymbol = this.route.snapshot.params['ticker'];
-  }
+  ) {}
 
   ngOnInit() {
+    this.route.params.subscribe((params) => {
+      const symbol = params['ticker']; // Ensure 'symbol' matches the name of the parameter defined in your route configuration
+      if (symbol && symbol !== 'home') {
+        this.selectedStockSymbol = symbol;
+        this.stockFormControl.setValue(symbol);
+        this.searchStock(symbol);
+      }
+    });
+    const previousData = this.stockSearchService.getPreviousRouteData();
+    // if (previousData) {
+    //   // Restore the state only if there's previous data
+    //   this.stockInfo = previousData.stockInfo;
+    //   console.log('Stock Info restored from previous data:', this.stockInfo);
+    //   this.stockFormControl.setValue(previousData.stockFormControlValue);
+    // } else {
+    // Initialize your state only if there's no previous data
     this.filteredOptions = this.stockFormControl.valueChanges.pipe(
       startWith(''),
       debounceTime(300),
-      switchMap(value => this.fetchAutocompleteOptions(value)),
-      filter(options => Array.isArray(options) && options.length > 0)
+      switchMap((value) => this.fetchAutocompleteOptions(value)),
+      filter((options) => Array.isArray(options) && options.length > 0)
     );
-  
 
     this.subscription.add(
       this.stockSearchService.exposedSearchResult.subscribe({
         next: (results) => {
-          this.stockInfo =
-            results?.hasOwnProperty('companyInfo') > 0
-              ? {
-                  companyInfo: results.companyInfo,
-                  stockPriceDetails: results.stockPriceDetails,
-                  companyPeers: results.companyPeers,
-                  chartsData: results.chartsData,
-                }
-              : null;
-          console.log('Stock Info in search component:', this.stockInfo);
+          // Update stockInfo based on new search results
+          this.stockInfo = this.extractStockInfo(results);
+          console.log('Stock Info updated from new search:', this.stockInfo);
         },
         error: (error) => console.error('Error fetching stock data:', error),
       })
     );
+    // }
+  }
+
+  private extractStockInfo(results: any): any {
+    // Method to extract and return stock info from search results
+    // Adjust according to your data structure
+    return results?.hasOwnProperty('companyInfo')
+      ? {
+          companyInfo: results.companyInfo,
+          stockPriceDetails: results.stockPriceDetails,
+          companyPeers: results.companyPeers,
+          chartsTabData: results.chartsTabData,
+        }
+      : null;
   }
 
   fetchAutocompleteOptions(searchTerm: string): Observable<string[]> {
     if (!searchTerm.trim()) {
       return of([]);
     }
-  
+
     this.isAutocompleteLoading.next(true); // Start loading
-  
+
     return this.stockSearchService.searchAutocomplete(searchTerm.trim()).pipe(
       catchError(() => of([])), // Handle errors gracefully by returning an empty array
       finalize(() => this.isAutocompleteLoading.next(false)) // Ensure loading is stopped
     );
   }
-  
 
   searchStock(event?: any) {
     let stock = '';
@@ -121,6 +141,8 @@ export class StockSearchComponent implements OnInit, OnDestroy {
     if (!stock) return;
 
     this.router.navigate(['/search', stock]);
+    this.tickerUrlParam = this.route.snapshot.params['ticker'];
+    console.log('tickerUrlParam', this.tickerUrlParam);
     this.selectedStockSymbol = stock;
     this.stockFormControl.setValue(stock, { emitEvent: false });
 
@@ -139,7 +161,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
             results &&
             results?.hasOwnProperty('companyInfo') &&
             results.companyPeers,
-            chartsData: 
+          chartsData:
             results &&
             results?.hasOwnProperty('companyInfo') &&
             results.chartsData,
@@ -162,12 +184,22 @@ export class StockSearchComponent implements OnInit, OnDestroy {
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
+    this.stockSearchService.setPreviousRouteData({
+      stockInfo: this.stockInfo,
+      stockFormControlValue: this.stockFormControl.value,
+    });
+    // sessionStorage.setItem('stateSave', this.stockInfo);
   }
 
   clearSearchResults() {
     this.stockFormControl.setValue('');
     this.stockSearchService.clearSearchResults();
     this.searchResultsDisplayed = false;
+    this.stockInfo = null;
+    this.stockSearchService.setPreviousRouteData(null);
+    // this.cdr.detectChanges();
+    this.router.navigate(['/search/home']);
+
     // this.filteredOptions = of([]); // Reset filtered options to prevent empty dropdown
     // this.filteredOptions = of([]);
     // this.stockInfo = null;

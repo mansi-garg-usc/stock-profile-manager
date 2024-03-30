@@ -42,10 +42,10 @@ export class PortfolioComponent implements OnInit {
     this.walletSubscription = this.portfolioService.walletMoney.subscribe({
       next: (money) => {
         this.oldWalletMoney = money;
-        console.log(
-          'Wallet Money Updated in buy component:',
-          this.oldWalletMoney
-        );
+        // console.log(
+        //   'Wallet Money Updated in buy component:',
+        //   this.oldWalletMoney
+        // );
       },
       error: (error) => {
         console.error('Error subscribing to walletMoney:', error);
@@ -66,7 +66,7 @@ export class PortfolioComponent implements OnInit {
       next: (data) => {
         if (data.length > 0) {
           this.portfolio = data;
-          console.log('Portfolio loaded:', data);
+          // console.log('Portfolio loaded:', data);
           if (this.portfolio.length == 0) {
             this.isEmpty = true;
           } else {
@@ -86,26 +86,26 @@ export class PortfolioComponent implements OnInit {
                 next: (response) => {
                   companyInfoData = response.companyInfo;
                   stockPriceDetailsData = response.stockPriceDetails;
-                  console.log('Company Info:', companyInfoData);
-                  console.log('Stock Price Details:', stockPriceDetailsData);
+                  // console.log('Company Info:', companyInfoData);
+                  // console.log('Stock Price Details:', stockPriceDetailsData);
                   let currentprice = parseFloat(
                     stockPriceDetailsData.c.toFixed(2)
                   );
-                  console.log('currentprice:', currentprice);
+                  // console.log('currentprice:', currentprice);
                   let totalcostinportfolio = parseFloat(
                     Number(this.portfolio[i].cost).toFixed(2)
                   );
-                  console.log('totalcostinportfolio:', totalcostinportfolio);
+                  // console.log('totalcostinportfolio:', totalcostinportfolio);
                   let totalStocks = parseFloat(
                     Number(this.portfolio[i].quantity).toFixed(2)
                   );
-                  console.log('Total Stocks:', totalStocks);
+                  // console.log('Total Stocks:', totalStocks);
                   let averagecostcurrent = totalcostinportfolio / totalStocks;
                   let changeDirection = currentprice - averagecostcurrent;
-                  console.log('averagecostcurrent:', averagecostcurrent);
+                  // console.log('averagecostcurrent:', averagecostcurrent);
                   let arrowDirection =
                     currentprice - parseFloat(changeDirection.toFixed(2));
-                  console.log('Arrow Direction:', arrowDirection);
+                  // console.log('Arrow Direction:', arrowDirection);
                   let arrow: any;
                   let arrowcolor: any;
                   if (arrowDirection < 0) {
@@ -118,8 +118,8 @@ export class PortfolioComponent implements OnInit {
                     arrow = '';
                     arrowcolor = { color: 'black' };
                   }
-                  console.log('Arrow:', arrow);
-                  console.log('Arrow Color:', arrowcolor);
+                  // console.log('Arrow:', arrow);
+                  // console.log('Arrow Color:', arrowcolor);
                   let cardItem: CardRecord = {
                     stocksymbol: this.portfolio[i].stocksymbol,
                     companyName: companyInfoData.name,
@@ -134,10 +134,10 @@ export class PortfolioComponent implements OnInit {
                     arrowcolor: arrowcolor,
                     totalcost: this.portfolio[i].cost,
                   };
-                  console.log('Card Item:', cardItem);
+                  // console.log('Card Item:', cardItem);
                   this.displayData.push(cardItem);
                   this.isLoading = false;
-                  console.log('Display Data:', this.displayData);
+                  // console.log('Display Data:', this.displayData);
                 },
                 error: (error) => {
                   console.error(
