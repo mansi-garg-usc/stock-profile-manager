@@ -56,6 +56,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
   searchResultsDisplayed: boolean = false;
   isAutocompleteLoading = new BehaviorSubject<boolean>(false);
   tickerUrlParam: any = '';
+  invalidEntry: boolean = false;
 
   constructor(
     private stockSearchService: StockSearchService,
@@ -138,7 +139,9 @@ export class StockSearchComponent implements OnInit, OnDestroy {
     } else {
       stock = this.stockFormControl.value;
     }
-    if (!stock) return;
+    if (!stock) {
+      this.invalidEntry = true;
+    }
 
     this.router.navigate(['/search', stock]);
     this.tickerUrlParam = this.route.snapshot.params['ticker'];
@@ -199,6 +202,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
     this.stockSearchService.setPreviousRouteData(null);
     // this.cdr.detectChanges();
     this.router.navigate(['/search/home']);
+    this.invalidEntry = false;
 
     // this.filteredOptions = of([]); // Reset filtered options to prevent empty dropdown
     // this.filteredOptions = of([]);

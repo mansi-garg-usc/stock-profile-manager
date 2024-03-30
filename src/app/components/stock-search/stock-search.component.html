@@ -26,6 +26,12 @@
                         }}</mat-option>
                 </mat-autocomplete>
             </div>
+            <div class="row mx-1">
+                <div *ngIf="invalidEntry" class="alert text-center alert-danger alert-dismissible fade show invalidalert" role="alert">
+                  No data found. Please enter a valid Ticker
+                  <!-- <button type="button" class="btn-close" aria-label="Close" (click)="showInvalidAlert = false"></button> -->
+                </div>
+              </div>
         </div>
     </div>
 </div>

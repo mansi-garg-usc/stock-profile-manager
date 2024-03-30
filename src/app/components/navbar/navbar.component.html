@@ -1,22 +1,54 @@
-<mat-toolbar class="navbar-container">
-  <p class="navbar-heading">Stock Search</p>
-  <span class="spacer"></span>
-  <button mat-icon-button class="hamburger-icon" (click)="toggleSidenav(sidenav)">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-      <path fill="#ffffff" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
-    </svg>
-  </button>
-  <div class="buttons">
-    <button class="button" routerLink="/search/home">Search</button>
-    <button class="button" routerLink="/watchlist">Watchlist</button>
-    <button class="button" routerLink="/portfolio">Portfolio</button>
-  </div>
-</mat-toolbar>
+<!DOCTYPE html>
+<html lang="en">
 
-<mat-sidenav #sidenav mode="over" class="sidenav">
-  <mat-nav-list class="navlist-container">
-    <a mat-list-item routerLink="/search/home">Search</a>
-    <a mat-list-item routerLink="/watchlist">Watchlist</a>
-    <a mat-list-item routerLink="/portfolio">Portfolio</a>
-  </mat-nav-list>
-</mat-sidenav>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Search Navbar</title>
+  <style>
+    .navbar-custom {
+      background-color: #1E0A8C;
+    }
+
+    .navbar-custom .navbar-brand,
+    .navbar-custom .navbar-nav .navbar-link {
+      color: #ffffff;
+    }
+
+    .navbar-custom .nav-item.active .navbar-link {
+      color: #D0C9FF;
+      border-bottom: 3px solid #D0C9FF;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-custom navbar-dark bg-color">
+    <div class="container">
+      <a class="navbar-brand" id="navbar-title">Stock Search</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
+        aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav ml-auto ms-auto">
+          <li>
+            <a class="navbar-link" routerLink="search/home" routerLinkActive="active">Search <span
+                class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="navbar-link" routerLink="watchlist" routerLinkActive="active">Watchlist</a>
+          </li>
+          <li class="nav-item">
+            <a class="navbar-link" routerLink="portfolio" routerLinkActive="active">Portfolio</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Include Bootstrap JS and its dependencies below, if not included already -->
+
+</body>
+
+</html>
