@@ -105,14 +105,16 @@ export class StockSearchComponent implements OnInit, OnDestroy {
   private extractStockInfo(results: any): any {
     // Method to extract and return stock info from search results
     // Adjust according to your data structure
-    return results?.hasOwnProperty('companyInfo')
-      ? {
-          companyInfo: results.companyInfo,
-          stockPriceDetails: results.stockPriceDetails,
-          companyPeers: results.companyPeers,
-          chartsTabData: results.chartsTabData,
-        }
-      : null;
+    if (this.selectedStockSymbol !== '') {
+      return results?.hasOwnProperty('companyInfo')
+        ? {
+            companyInfo: results.companyInfo,
+            stockPriceDetails: results.stockPriceDetails,
+            companyPeers: results.companyPeers,
+            chartsTabData: results.chartsTabData,
+          }
+        : null;
+    }
   }
 
   fetchAutocompleteOptions(searchTerm: string): Observable<string[]> {
@@ -129,6 +131,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
   }
 
   searchStock(event?: any) {
+    this.invalidEntry = false;
     let stock = '';
     if (event instanceof MatAutocompleteSelectedEvent) {
       stock = event.option.value;
@@ -141,42 +144,50 @@ export class StockSearchComponent implements OnInit, OnDestroy {
     }
     if (!stock) {
       this.invalidEntry = true;
+    } else {
+      this.router.navigate(['/search', stock]);
+      this.tickerUrlParam = this.route.snapshot.params['ticker'];
+      console.log('tickerUrlParam', this.tickerUrlParam);
+      this.selectedStockSymbol = stock;
+      this.stockFormControl.setValue(stock, { emitEvent: false });
+
+      this.stockSearchService.searchStock(stock).subscribe({
+        next: (results) => {
+          if (JSON.stringify(results.companyInfo) !== '{}') {
+            this.stockInfo = {
+              companyInfo:
+                results &&
+                results?.hasOwnProperty('companyInfo') &&
+                results.companyInfo,
+              stockPriceDetails:
+                results &&
+                results?.hasOwnProperty('companyInfo') &&
+                results.stockPriceDetails,
+              companyPeers:
+                results &&
+                results?.hasOwnProperty('companyInfo') &&
+                results.companyPeers,
+              chartsData:
+                results &&
+                results?.hasOwnProperty('companyInfo') &&
+                results.chartsData,
+            };
+            this.searchResultsDisplayed = true;
+            this.isAutocompleteLoading.next(false);
+            // this.filteredOptions = of([]);
+          } else {
+            this.invalidEntry = true;
+            this.isAutocompleteLoading.next(false);
+            // this.searchResultsDisplayed = false;
+            // this.stockInfo = null;
+            // this.filteredOptions = of([]);
+          }
+        },
+        error: (error: any) => {
+          console.error('Error fetching stock data:', error);
+        },
+      });
     }
-
-    this.router.navigate(['/search', stock]);
-    this.tickerUrlParam = this.route.snapshot.params['ticker'];
-    console.log('tickerUrlParam', this.tickerUrlParam);
-    this.selectedStockSymbol = stock;
-    this.stockFormControl.setValue(stock, { emitEvent: false });
-
-    this.stockSearchService.searchStock(stock).subscribe({
-      next: (results) => {
-        this.stockInfo = {
-          companyInfo:
-            results &&
-            results?.hasOwnProperty('companyInfo') &&
-            results.companyInfo,
-          stockPriceDetails:
-            results &&
-            results?.hasOwnProperty('companyInfo') &&
-            results.stockPriceDetails,
-          companyPeers:
-            results &&
-            results?.hasOwnProperty('companyInfo') &&
-            results.companyPeers,
-          chartsData:
-            results &&
-            results?.hasOwnProperty('companyInfo') &&
-            results.chartsData,
-        };
-        this.searchResultsDisplayed = true;
-        this.isAutocompleteLoading.next(false);
-        // this.filteredOptions = of([]);
-      },
-      error: (error: any) => {
-        console.error('Error fetching stock data:', error);
-      },
-    });
   }
 
   // ngOnChanges() {
@@ -204,6 +215,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
     this.router.navigate(['/search/home']);
     this.invalidEntry = false;
 
+    this.selectedStockSymbol = '';
     // this.filteredOptions = of([]); // Reset filtered options to prevent empty dropdown
     // this.filteredOptions = of([]);
     // this.stockInfo = null;

@@ -1,7 +1,12 @@
-<div *ngIf="stockInfo" class="container stock-details-layout">
-    <div *ngIf="" class="alert alert-success alert-dismissible fade show" role="alert">
+<div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 70vh; width: 100%;">
+    <div class="spinner-border" style="width: 3rem; height: 3rem; color: darkblue" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>
+
+<div *ngIf="stockInfo && !isLoading" class="container stock-details-layout">
+    <div *ngIf="displayAddedToWatchlistAlert" class="alert alert-success alert-dismissible fade show" role="alert">
         <div class="d-flex align-items-center">
-            <i class="bi bi-check-circle-fill me-2"></i> <!-- Bootstrap icon for checkmark -->
             <span>{{stockSymbol.toUpperCase()}} added to Watchlist.</span>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -25,7 +30,7 @@
                 <p>{{ stockInfo?.companyInfo?.exchange }}</p>
                 <div class="d-grid gap-2 d-sm-block">
                     <button class="btn btn-success" type="button" (click)="openBuyModal()">Buy</button>
-                    <button class="btn btn-danger" type="button" (click)="openSellModal()">Sell</button>
+                    <button class="btn btn-danger" type="button" *ngIf="isPresentInPortfolio" (click)="openSellModal()">Sell</button>
                 </div>
             </div>
         </div>

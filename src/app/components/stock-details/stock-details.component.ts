@@ -44,12 +44,16 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
   dateTimestamp: any;
   marketStatusString: string = '';
   isPresentInWatchlist: boolean = false;
+  isPresentInPortfolio: boolean = false;
   indexInWatchlist: number = -1;
   displayBuyAlert = false;
   displaySellAlert = false;
   portfolioData: any = [];
   canSellStock: boolean = false;
   canSellStock$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  isLoading: boolean = true;
+  displayAddedToWatchlistAlert: boolean = false;
+  displayRemovedFromWatchlistAlert: boolean = false;
 
   // isPresentInWatchlist: boolean = localStorage
   //   .getItem('watchlist')
@@ -69,8 +73,15 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
     private portfolioService: PortfolioService
   ) {}
 
-  ngOnInit() {
+  sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async ngOnInit() {
     console.log('calling load watchlist for:', this.stockSymbol);
+    this.isLoading = true;
+    await this.sleep(500); // TODO
+
     this.loadWatchlist();
     this.subscription = this.stockSearchService.exposedSearchResult.subscribe({
       next: (results) => {
@@ -99,6 +110,14 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
             this.portfolioService.getPortfolio().subscribe({
               next: (data) => {
                 this.portfolioData = data;
+                this.portfolioData.some((entry: any) => {
+                  if (entry?.stocksymbol === this.stockSymbol.toUpperCase()) {
+                    this.isPresentInPortfolio = true;
+                    this.indexInWatchlist = this.portfolioData.indexOf(entry);
+                  } else {
+                    this.isPresentInPortfolio = false;
+                  }
+                });
               },
               error: (error) => {
                 console.error(
@@ -123,11 +142,12 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
         }
       );
 
+    this.isLoading = false;
     // this.setWatchlistEntry();
   }
 
   handleSearchResults(results: any) {
-    if (results && results.length > 0) {
+    if (results && results.length > 0 && this.stockSymbol !== '') {
       this.stockInfo = results;
       this.setMarketStatus();
       this.checkChangePercentage(this.stockInfo?.stockPriceDetails?.dp);
@@ -152,7 +172,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
     buyModalReference.componentInstance.currentPrice =
       this.stockInfo?.stockPriceDetails?.c;
     buyModalReference.componentInstance.stockPresentInPortfolio =
-      this.isPresentInWatchlist;
+      this.isPresentInPortfolio;
     buyModalReference.componentInstance.stockIndexInPortfolio =
       this.indexInWatchlist;
     buyModalReference.componentInstance.currentPortfolioData =
@@ -198,6 +218,19 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.portfolioData = data;
         console.log('Portfolio data refreshed:', this.portfolioData);
+        if (this.portfolioData.length > 0) {
+          this.portfolioData.some((entry: any) => {
+            if (entry?.stocksymbol === this.stockSymbol.toUpperCase()) {
+              this.isPresentInPortfolio = true;
+              this.indexInWatchlist = this.portfolioData.indexOf(entry);
+            } else {
+              this.isPresentInPortfolio = false;
+            }
+          })
+        } else {
+          this.isPresentInPortfolio = false;
+          this.indexInWatchlist = -1;
+        }
       },
       error: (error) => {
         console.error('Error refreshing portfolio data:', error);
@@ -347,6 +380,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
           next: () => {
             console.log(`${this.stockSymbol} removed from watchlist`);
             this.isPresentInWatchlist = false; // Update the flag since the item is now removed
+            this.displayRemovedFromWatchlistAlert = true;
             // Optionally, refresh the watchlist or perform other UI updates here
           },
           error: (error) =>
@@ -360,6 +394,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
           next: () => {
             console.log(`${this.stockSymbol} added to watchlist`);
             this.isPresentInWatchlist = true; // Update the flag since the item is now added
+            this.displayAddedToWatchlistAlert = true;
             // Optionally, refresh the watchlist or perform other UI updates here
           },
           error: (error) => console.error('Error adding to watchlist:', error),

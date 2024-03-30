@@ -35,5 +35,5 @@
         </div>
     </div>
 </div>
-<app-stock-details *ngIf="stockInfo" [stockInfo]="stockInfo" [stockSymbol]="selectedStockSymbol"
+<app-stock-details *ngIf="stockInfo && !invalidEntry" [stockInfo]="stockInfo" [stockSymbol]="selectedStockSymbol"
     [searchStock]="searchStock.bind(this)"></app-stock-details>

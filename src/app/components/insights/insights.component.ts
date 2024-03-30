@@ -15,40 +15,48 @@ export class InsightsComponent implements OnInit, OnDestroy {
   @Input() stockInfo$: Observable<any> = of(null);
   @Input() isMarketOpen$: Observable<boolean> = of(false);
   @Input() stockSymbol: string = '';
-  
+
   earnings: Earnings[] = [];
   trends: Trends[] = [];
   sentiments: Sentiments[] = [];
-  sentimentsAggregate: SentimentsAggregate = {mt: 0, mp:0, mn:0, ct:1, cp:0, cn:0};
-  splineData: SplineData = {xlabels: [], yestimate: [], yactual: []}
-  barData: BarData = {s: [], ss: [], b: [], h: [], sb: [], labels: []}
+  sentimentsAggregate: SentimentsAggregate = {
+    mt: 0,
+    mp: 0,
+    mn: 0,
+    ct: 1,
+    cp: 0,
+    cn: 0,
+  };
+  splineData: SplineData = { xlabels: [], yestimate: [], yactual: [] };
+  barData: BarData = { s: [], ss: [], b: [], h: [], sb: [], labels: [] };
 
   private earningSubscription: Subscription = new Subscription();
   private trendsSubscription: Subscription = new Subscription();
   private sentimentSubscription: Subscription = new Subscription();
-  
-  
-  constructor(private stockSearchService: StockSearchService) {
-    this.earningSubscription = this.stockSearchService.exposedCompanyEarnings.subscribe({
-      next: (results) => {
-        this.earnings = results?.length > 0 ? results : null;
-      },
-      error: (error) => console.error('Error fetching earnings:', error),
-    });
-    this.trendsSubscription = this.stockSearchService.exposedCompanyTrends.subscribe({
-      next: (results) => {
-        this.trends = results?.length > 0 ? results : null;
-      },
-      error: (error) => console.error('Error fetching trends:', error),
-    });
-    this.sentimentSubscription = this.stockSearchService.exposedCompanySentiment.subscribe({
-      next: (results) => {
-        this.sentiments = results?.length > 0 ? results : null;
-      },
-      error: (error) => console.error('Error fetching sentiments:', error),
-    });
-  }
 
+  constructor(private stockSearchService: StockSearchService) {
+    this.earningSubscription =
+      this.stockSearchService.exposedCompanyEarnings.subscribe({
+        next: (results) => {
+          this.earnings = results?.length > 0 ? results : null;
+        },
+        error: (error) => console.error('Error fetching earnings:', error),
+      });
+    this.trendsSubscription =
+      this.stockSearchService.exposedCompanyTrends.subscribe({
+        next: (results) => {
+          this.trends = results?.length > 0 ? results : null;
+        },
+        error: (error) => console.error('Error fetching trends:', error),
+      });
+    this.sentimentSubscription =
+      this.stockSearchService.exposedCompanySentiment.subscribe({
+        next: (results) => {
+          this.sentiments = results?.length > 0 ? results : null;
+        },
+        error: (error) => console.error('Error fetching sentiments:', error),
+      });
+  }
 
   ngOnInit() {
     this.getInsights();
@@ -59,10 +67,9 @@ export class InsightsComponent implements OnInit, OnDestroy {
     this.earningSubscription.add(
       this.stockSearchService.fetchEearnings().subscribe({
         next: (results) => {
-
           this.earnings = results;
-          this.setSplineData(this.earnings)
-          console.log('Earnings'+this.earnings);
+          this.setSplineData(this.earnings);
+          console.log('Earnings' + this.earnings);
         },
         error: (error) => {
           console.error('Error fetching earnings:', error);
@@ -74,9 +81,8 @@ export class InsightsComponent implements OnInit, OnDestroy {
     this.trendsSubscription.add(
       this.stockSearchService.fetchTrends().subscribe({
         next: (results) => {
-
           this.trends = results;
-          this.setBarData(this.trends)
+          this.setBarData(this.trends);
           console.log(this.trends);
         },
         error: (error) => {
@@ -89,7 +95,6 @@ export class InsightsComponent implements OnInit, OnDestroy {
     this.sentimentSubscription.add(
       this.stockSearchService.fetchSentiment().subscribe({
         next: (results) => {
-
           this.sentiments = results?.data;
           this.setAggregates(this.sentiments);
           console.log('Fetched sentiments:', this.sentiments);
@@ -120,139 +125,166 @@ export class InsightsComponent implements OnInit, OnDestroy {
   }
 
   private setAggregates(response: Sentiments[]): void {
-    this.sentimentsAggregate = {mt: 0, mp:0, mn:0, ct:0, cp:0, cn:0}
+    this.sentimentsAggregate = { mt: 0, mp: 0, mn: 0, ct: 0, cp: 0, cn: 0 };
     for (let item of response) {
-      this.sentimentsAggregate.ct =  this.sentimentsAggregate.ct + item.change
-      this.sentimentsAggregate.mt += item.mspr
+      this.sentimentsAggregate.ct = this.sentimentsAggregate.ct + item.change;
+      this.sentimentsAggregate.mt += item.mspr;
+      this.sentimentsAggregate.mt = parseFloat(
+        Number(this.sentimentsAggregate.mt).toFixed(2)
+      );
 
-      if ( item.change > 0 )
-        this.sentimentsAggregate.cp += item.change
-      else
-        this.sentimentsAggregate.cn += item.change
+      if (item.change > 0) {
+        this.sentimentsAggregate.cp += item.change;
+        this.sentimentsAggregate.cp = parseFloat(
+          Number(this.sentimentsAggregate.cp).toFixed(2)
+        );
+      } else {
+        this.sentimentsAggregate.cn += item.change;
+        this.sentimentsAggregate.cn = parseFloat(
+          Number(this.sentimentsAggregate.cn).toFixed(2)
+        );
+      }
 
-      if ( item.mspr > 0 )
-        this.sentimentsAggregate.mp += item.mspr
-      else
-        this.sentimentsAggregate.mn += item.mspr
-      
+      if (item.mspr > 0) {
+        this.sentimentsAggregate.mp += item.mspr;
+        this.sentimentsAggregate.mp = parseFloat(
+          Number(this.sentimentsAggregate.mp).toFixed(2)
+        );
+      } else {
+        this.sentimentsAggregate.mn += item.mspr;
+        this.sentimentsAggregate.mn = parseFloat(
+          Number(this.sentimentsAggregate.mn).toFixed(2)
+        );
+      }
     }
   }
 
   private setSplineData(earnings: Earnings[]): void {
-    this.splineData = {xlabels: [], yestimate: [], yactual: []}
-    earnings.sort((a,b) => (a.period > b.period) ? -1 : ((b.period > a.period) ? 11 : 0))
+    this.splineData = { xlabels: [], yestimate: [], yactual: [] };
+    earnings.sort((a, b) =>
+      a.period > b.period ? -1 : b.period > a.period ? 11 : 0
+    );
 
     for (let item of earnings) {
-      
-      this.splineData.xlabels.push(item.period + '<br/>'+' Surprise: ' + item.surprise)
-      this.splineData.yactual.push(item.actual)
-      this.splineData.yestimate.push(item.estimate)
-      
+      this.splineData.xlabels.push(
+        item.period + '<br/>' + ' Surprise: ' + item.surprise
+      );
+      this.splineData.yactual.push(item.actual);
+      this.splineData.yestimate.push(item.estimate);
+
       console.log('SetSplineData:', this.splineData);
     }
-    this.createSplineChart()
+    this.createSplineChart();
   }
 
   private setBarData(trends: Trends[]): void {
-    this.barData = {s: [], ss: [], b: [], h: [], sb: [], labels: []}
-    trends.sort((a,b) => (a.period > b.period) ? -1 : ((b.period > a.period) ? 11 : 0))
+    this.barData = { s: [], ss: [], b: [], h: [], sb: [], labels: [] };
+    trends.sort((a, b) =>
+      a.period > b.period ? -1 : b.period > a.period ? 11 : 0
+    );
 
     for (let item of trends) {
-      this.barData.b.push(item.buy)
-      this.barData.h.push(item.hold)
-      this.barData.s.push(item.sell)
-      this.barData.ss.push(item.strongSell)
-      this.barData.sb.push(item.strongBuy)
-      this.barData.labels.push(item.period)
-      
+      this.barData.b.push(item.buy);
+      this.barData.h.push(item.hold);
+      this.barData.s.push(item.sell);
+      this.barData.ss.push(item.strongSell);
+      this.barData.sb.push(item.strongBuy);
+      this.barData.labels.push(item.period);
+
       console.log('SetSplineData:', this.splineData);
     }
-    this.createTrends()
+    this.createTrends();
   }
 
-
   private createSplineChart(): void {
-
     Highcharts.chart('container', {
       chart: {
-          type: 'spline'
+        type: 'spline',
       },
       title: {
-          text: 'Historical EPS Surprises'
+        text: 'Historical EPS Surprises',
       },
       xAxis: {
-          categories: this.splineData.xlabels
+        categories: this.splineData.xlabels,
       },
       yAxis: {
-          title: {
-              text: 'Quarterly EPS'
-          }
+        title: {
+          text: 'Quarterly EPS',
+        },
       },
       plotOptions: {
-          line: {
-              dataLabels: {
-                  enabled: true
-              },
-              enableMouseTracking: false
-          }
+        line: {
+          dataLabels: {
+            enabled: true,
+          },
+          enableMouseTracking: false,
+        },
       },
-      series: [{
+      series: [
+        {
           name: 'Actual',
           color: '#1AA7EC',
-          data: this.splineData.yactual
-      }, {
+          data: this.splineData.yactual,
+        },
+        {
           name: 'Estimate',
           color: '#4B0082',
-          data: this.splineData.yestimate
-      }]
+          data: this.splineData.yestimate,
+        },
+      ],
     } as any);
   }
 
   private createTrends(): void {
-
     Highcharts.chart('container1', {
       chart: {
-        type: 'column'
+        type: 'column',
       },
       title: {
-        text: 'Recommendation Trends'
+        text: 'Recommendation Trends',
       },
       xAxis: {
-        categories: this.barData.labels
+        categories: this.barData.labels,
       },
       yAxis: {
         min: 0,
         title: {
-          text: '#Analysis'
+          text: '#Analysis',
         },
         stackLabels: {
-          enabled: true
-        }
+          enabled: true,
+        },
       },
       plotOptions: {
         column: {
           stacking: 'normal',
           dataLabels: {
-            enabled: true
-          }
-        }
+            enabled: true,
+          },
+        },
       },
-      series: [{
-        name: 'Strong Buy',
-        data: this.barData.sb
-      }, {
-        name: 'Buy',
-        data: this.barData.b
-      }, {
-        name: 'Hold',
-        data: this.barData.h
-      }, {
-        name: 'Sell',
-        data: this.barData.s
-      }, {
-        name: 'Strong Sell',
-        data: this.barData.ss
-      }]
+      series: [
+        {
+          name: 'Strong Buy',
+          data: this.barData.sb,
+        },
+        {
+          name: 'Buy',
+          data: this.barData.b,
+        },
+        {
+          name: 'Hold',
+          data: this.barData.h,
+        },
+        {
+          name: 'Sell',
+          data: this.barData.s,
+        },
+        {
+          name: 'Strong Sell',
+          data: this.barData.ss,
+        },
+      ],
     } as any);
   }
 }
@@ -285,18 +317,18 @@ interface Sentiments {
 }
 
 interface SentimentsAggregate {
-  mt : number;
-  mp : number;
-  mn : number;
-  ct : number;
-  cp : number;
-  cn : number;
+  mt: number;
+  mp: number;
+  mn: number;
+  ct: number;
+  cp: number;
+  cn: number;
 }
 
 interface SplineData {
-  xlabels: string[]
-  yactual: number[]
-  yestimate: number[]
+  xlabels: string[];
+  yactual: number[];
+  yestimate: number[];
 }
 
 interface BarData {
@@ -307,5 +339,3 @@ interface BarData {
   ss: number[];
   labels: string[];
 }
-
-

@@ -1,0 +1,40 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+footer {
+  clear: both;
+}
+
+.footer {
+  margin-top: auto;
+  background-color: #dddfe2;
+  padding: 1rem 0;
+  width: 100vw;
+  text-align: center;
+}
+
+.powered-text {
+  text-align: center;
+  padding: 1% 0;
+  font-weight: bold;
+}
+
+.fbackground {
+  background-color: #dddfe2;
+}
+
+.link {
+  text-decoration: underline;
+}
