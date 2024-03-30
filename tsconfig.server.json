@@ -1,15 +1,14 @@
 {
-    "compilerOptions": {
-      "module": "CommonJS",
-      "target": "ES2022", // or the ES version that matches your Node.js version
-      "rootDir": "./server", // Root directory of the server
-      "moduleResolution": "node",
-      "outDir": "./dist/stock-portfolio-manager", // Output directory for compiled JS files
-      "baseUrl": "./",
-      "esModuleInterop": true,
-      "strict": true
-    },
-    "include": ["server/*.ts"], // Include all TypeScript files in the server folder
-    "exclude": ["node_modules", "**/*.spec.ts"] // Exclude node_modules and test files
-  }
-  
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ES2022", // or the ES version that matches your Node.js version
+    "rootDir": "./server", // Root directory of the server
+    "moduleResolution": "node",
+    "outDir": "./server", // Output directory for compiled JS files
+    "baseUrl": "./",
+    "esModuleInterop": true,
+    "strict": true
+  },
+  "include": ["server/*.ts"], // Include all TypeScript files in the server folder
+  "exclude": ["node_modules", "**/*.spec.ts"] // Exclude node_modules and test files
+}

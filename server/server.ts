@@ -1,9 +1,10 @@
 import cors from 'cors';
 import express, { Request, Response } from 'express';
 import path from 'path';
-const axios = require('axios');
-
-const { MongoClient, ServerApiVersion } = require('mongodb');
+import axios from 'axios';
+// const axios = require('axios');
+import { MongoClient, ServerApiVersion } from 'mongodb';
+// const { MongoClient, ServerApiVersion } = require('mongodb');
 // Replace the placeholder with your Atlas connection string
 
 const uri =
@@ -14,7 +15,7 @@ const client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-    useUnifiedTopology: true,
+    // useUnifiedTopology: true,
   },
 });
 
@@ -29,7 +30,8 @@ let wallet: any;
 const app = express();
 const finnhub_api_key = 'cnih581r01qj1g5q4jlgcnih581r01qj1g5q4jm0';
 const polygon_api_key = 'Veu4EyzzJTduRuvf0Y1woy5mwtn1mMIA';
-const port = 8000;
+const port = process.env['PORT'] || 8000;;
+app.set('trust proxy', true);
 
 let dateToday = formatDate(new Date());
 
@@ -65,9 +67,13 @@ async function startServer() {
 
     // Middleware
     app.use(cors());
-    app.use(
-      express.static(path.join(__dirname, '../dist/stock-portfolio-manager'))
-    );
+    // app.use(
+    //   express.static(path.join(__dirname, '../dist/stock-portfolio-manager'))
+    // );
+    app.use(express.static(path.join(__dirname, 'dist/stock-portfolio-manager/browser')));
+    app.get('/', (req, res) => {
+      res.sendFile(path.join(__dirname, 'dist/stock-portfolio-manager/browser/index.html'));
+    });
     app.get('/api', (req, res) => {
       res.json({ message: 'API Response' });
     });
@@ -468,7 +474,9 @@ async function startServer() {
     // );
 
     app.get('*', (req, res) => {
-      res.sendFile(path.join(__dirname, '/browser/index.html'));
+      res.sendFile(
+        path.join(__dirname, 'dist/stock-portfolio-manager/browser/index.html')
+      );
     });
 
     // Start the Express server
