@@ -12,13 +12,13 @@
                 <p class="mb-0">Current Price: <strong>{{ currentPrice }}</strong></p>
             </div>
             <div class="col-12 mb-2">
-                <p class="mb-0">Money in Wallet: <strong>{{ moneyInWallet | currency}}</strong></p>
+                <p class="mb-0">Money in Wallet: <strong>{{ oldWalletMoney | currency}}</strong></p>
             </div>
             <div class="col-12 mb-2">
                 <label for="quantity">Quantity:</label>
-                <input type="number" class="form-control" [(ngModel)]="quantity">
+                <input type="number" class="form-control" [(ngModel)]="quantity" (ngModelChange)="sellValidation()">
             </div>
-            <p class="text-danger" *ngIf="!sellValidation()">You cannot sell the stocks that you don't have!</p>
+            <p class="text-danger" *ngIf="!canSell && quantity > 0">You cannot sell the stocks that you don't have!</p>
 
         </div>
     </div>
@@ -28,5 +28,6 @@
     <div class="col-12">
         <p class="mb-0">Total: <strong>{{ getTotal() }}</strong></p>
     </div>
-    <button type="button" class="btn btn-success" data-bs-dismiss="modal" [disabled]="!sellValidation() || this.quantity<=0" (click)="sellStock()">Sell</button>
+    <button type="button" class="btn btn-success" data-bs-dismiss="modal" [disabled]="!canSell ||  this.quantity<=0"
+        (click)="sellStock()">Sell</button>
 </div>

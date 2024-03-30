@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { PortfolioService } from '../../core/services/portfolio.service';
 import { StockSearchService } from '../../core/services/stock-search.service';
 import { StockBuyModalComponent } from '../utility-components/buy-modal/buy-modal.component';
@@ -18,7 +18,7 @@ import { StockSellModalComponent } from '../utility-components/sell-modal/sell-m
 })
 export class PortfolioComponent implements OnInit {
   portfolio: any = [];
-  walletMoney = 25000000;
+  // walletMoney = 25000000;
   stocks: any = [];
   isEmpty: boolean = false;
   isLoading: boolean = false;
@@ -27,6 +27,8 @@ export class PortfolioComponent implements OnInit {
   displaySellAlert = false;
   symbolBought: any;
   symbolSold: any;
+  oldWalletMoney: any;
+  private walletSubscription!: Subscription;
 
   private baseUrl = 'http://localhost:8000/api';
   constructor(
@@ -37,6 +39,21 @@ export class PortfolioComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.walletSubscription = this.portfolioService.walletMoney.subscribe({
+      next: (money) => {
+        this.oldWalletMoney = money;
+        console.log(
+          'Wallet Money Updated in buy component:',
+          this.oldWalletMoney
+        );
+      },
+      error: (error) => {
+        console.error('Error subscribing to walletMoney:', error);
+      },
+      complete: () => {
+        console.log('Completed wallet money subscription.');
+      },
+    });
     this.loadPortfolio();
   }
 
@@ -150,7 +167,7 @@ export class PortfolioComponent implements OnInit {
     const buyModalReference = this.modalService.open(StockBuyModalComponent);
     buyModalReference.componentInstance.stocksymbol = stocksymbol;
     buyModalReference.componentInstance.currentPrice = currentPrice;
-    buyModalReference.componentInstance.moneyInWallet = this.walletMoney;
+    // buyModalReference.componentInstance.moneyInWallet = this.oldWalletMoney;
     buyModalReference.componentInstance.currentPortfolioData = this.portfolio;
     buyModalReference.result.then((result) => {
       this.displayBuyAlert = true;
@@ -167,7 +184,7 @@ export class PortfolioComponent implements OnInit {
     this.displaySellAlert = false;
     const sellModalReference = this.modalService.open(StockSellModalComponent);
     sellModalReference.componentInstance.stocksymbol = stocksymbol;
-    sellModalReference.componentInstance.moneyInWallet = this.walletMoney;
+    // sellModalReference.componentInstance.moneyInWallet = this.oldWalletMoney;
     sellModalReference.componentInstance.currentPrice = currentPrice;
     sellModalReference.componentInstance.currentPortfolioData = this.portfolio;
     sellModalReference.result.then((result) => {
@@ -215,6 +232,12 @@ export class PortfolioComponent implements OnInit {
           console.error('There was an error updating the record', error);
         },
       });
+  }
+
+  ngOnDestroy(): void {
+    if (this.walletSubscription) {
+      this.walletSubscription.unsubscribe();
+    }
   }
 }
 

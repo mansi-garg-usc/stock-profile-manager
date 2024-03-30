@@ -19,7 +19,7 @@
         </div>
 
         <div *ngIf="!isLoading" class="row">
-            <h4>Money in Wallet: {{ walletMoney }}</h4>
+            <h4>Money in Wallet: {{ oldWalletMoney }}</h4>
             <div *ngIf="this.isEmpty && !isLoading" class="alert alert-warning text-center" role="alert">
                 Currently you don't have any stock.
             </div>

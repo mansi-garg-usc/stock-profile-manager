@@ -24,6 +24,7 @@ const client = new MongoClient(uri, {
 let db;
 let watchlist: any;
 let portfolio: any;
+let wallet: any;
 
 const app = express();
 const finnhub_api_key = 'cnih581r01qj1g5q4jlgcnih581r01qj1g5q4jm0';
@@ -60,6 +61,7 @@ async function startServer() {
     db = client.db('stockprofilemanager');
     watchlist = db.collection('watchlist');
     portfolio = db.collection('portfolio');
+    wallet = db.collection('wallet');
 
     // Middleware
     app.use(cors());
@@ -114,7 +116,7 @@ async function startServer() {
     app.get('/api/history', async (req, res) => {
       let fromDate = req.query['fromDate'];
       let toDate = req.query['toDate'];
-      let tickerSymbol = req.query['symbol'];
+      let tickerSymbol = String(req.query['symbol']).toUpperCase();
       const url = `https://api.polygon.io/v2/aggs/ticker/${tickerSymbol}/range/1/day/${fromDate}/${toDate}?adjusted=true&sort=asc&apiKey=${polygon_api_key}`;
 
       console.log('Requesting URL:', url); // Log the URL being requested
@@ -423,6 +425,40 @@ async function startServer() {
         // client.close();
       } catch (error) {
         res.status(500).send(`Error updating portfolio - ${error}`);
+      }
+    });
+
+    app.get('/api/setwalletmoney', async (req, res) => {
+      try {
+        const updatedAmount = req.query['updatedAmount'];
+        // await client.connect();
+        const session = client.startSession();
+        const walletResponse = await wallet.updateOne(
+          { key: 'key_wallet' },
+          { $set: { walletmoney: Number(updatedAmount) } },
+          { upsert: true }
+        );
+        console.log('Updated wallet:', walletResponse);
+        const walletMoney = await wallet.find({}).toArray();
+        res.json(walletMoney);
+        await session.endSession();
+        // client.close();
+      } catch (error) {
+        res.status(500).send(`Error updating wallet - ${error}`);
+      }
+    });
+
+    app.get('/api/getwalletmoney', async (req, res) => {
+      try {
+        // await client.connect();
+        const session = client.startSession();
+        const walletMoney = await wallet.find({}).toArray();
+        res.json(walletMoney);
+        console.log('Wallet Money:', walletMoney);
+        await session.endSession();
+        // client.close();
+      } catch (error) {
+        res.status(500).send(`Error retrieving wallet - ${error}`);
       }
     });
 

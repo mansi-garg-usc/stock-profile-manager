@@ -4,6 +4,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PortfolioService } from '../../../core/services/portfolio.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-sell-modal',
@@ -15,12 +16,14 @@ import { PortfolioService } from '../../../core/services/portfolio.service';
 export class StockSellModalComponent {
   @Input() stocksymbol!: string;
   @Input() currentPrice!: number;
-  @Input() moneyInWallet!: number;
+  // @Input() moneyInWallet!: number;
   @Input() currentPortfolioData: any;
   quantity: number = 0;
   oldWalletMoney: any;
   stockPresentInPortfolio: boolean = false;
   stockIndexInPortfolio: number = -1;
+  private walletSubscription!: Subscription;
+  canSell: boolean = false;
 
   constructor(
     public activeModal: NgbActiveModal,
@@ -28,12 +31,27 @@ export class StockSellModalComponent {
   ) {}
 
   ngOnInit(): void {
+    this.walletSubscription = this.portfolioService.walletMoney.subscribe({
+      next: (money) => {
+        this.oldWalletMoney = money;
+        console.log(
+          'Wallet Money Updated in buy component:',
+          this.oldWalletMoney
+        );
+      },
+      error: (error) => {
+        console.error('Error subscribing to walletMoney:', error);
+      },
+      complete: () => {
+        console.log('Completed wallet money subscription.');
+      },
+    });
     console.log('Modal initialized');
-    if (this.stocksymbol && this.currentPrice && this.moneyInWallet) {
+    if (this.stocksymbol && this.currentPrice) {
       console.log('Stock Symbol:', this.stocksymbol);
       console.log('Current Price:', this.currentPrice);
-      console.log('Money in Wallet:', this.moneyInWallet);
-      this.oldWalletMoney = this.moneyInWallet;
+      // console.log('Money in Wallet:', this.moneyInWallet);
+      // this.oldWalletMoney = this.moneyInWallet;
       this.currentPortfolioData.some((entry: any) => {
         if (
           entry.stocksymbol.toUpperCase() === this.stocksymbol.toUpperCase()
@@ -43,16 +61,20 @@ export class StockSellModalComponent {
         }
       });
     }
+    if (this.stocksymbol && this.currentPrice) {
+      this.sellValidation(); // Initial validation
+    }
   }
 
-  sellValidation(): boolean {
-    // if (this.quantity <= 0) {
-    //   return false;
-    // }
-    if (this.quantity > this.currentPortfolioData[this.stockIndexInPortfolio].quantity) {
-      return false;
-    }
-    return true;
+  sellValidation(): void {
+    const portfolioEntry = this.currentPortfolioData.find(
+      (entry: any) =>
+        entry.stocksymbol.toUpperCase() === this.stocksymbol.toUpperCase()
+    );
+    this.canSell =
+      portfolioEntry &&
+      this.quantity > 0 &&
+      this.quantity <= portfolioEntry.quantity;
   }
 
   sellStock(): void {
@@ -61,6 +83,7 @@ export class StockSellModalComponent {
       'Current Portfolio Data on sell stock:',
       this.currentPortfolioData
     );
+
     if (
       this.currentPortfolioData[this.stockIndexInPortfolio].quantity ==
       this.quantity
@@ -110,14 +133,23 @@ export class StockSellModalComponent {
         });
     }
 
+    const totalRevenue = this.getTotal();
+    this.portfolioService.updateWalletMoney(totalRevenue);
+
     this.activeModal.close();
   }
 
   getTotal(): number {
-    return this.quantity * this.currentPrice;
+    return parseFloat(Number(this.quantity * this.currentPrice).toFixed(2));
   }
 
   dismiss(): void {
     this.activeModal.dismiss();
+  }
+
+  ngOnDestroy(): void {
+    if (this.walletSubscription) {
+      this.walletSubscription.unsubscribe();
+    }
   }
 }

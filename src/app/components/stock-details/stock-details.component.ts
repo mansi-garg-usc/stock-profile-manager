@@ -58,7 +58,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
 
   public showTabs: boolean = false;
   private subscription: Subscription = new Subscription();
-  moneyInWallet: number = 10000000; //TODO
+  // moneyInWallet: number = 10000000; //TODO
 
   constructor(
     private stockSearchService: StockSearchService,
@@ -99,6 +99,9 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
               next: (data) => {
                 this.portfolioData = data;
               },
+              error: (error) => {
+                console.error('Error fetching portfolio data in stock details:', error);
+              },
             });
           }
         })
@@ -132,7 +135,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
       this.showTabs = true;
       this.stockInfoSubject.next(this.stockInfo);
       this.stockSearchService.startPeriodicUpdate(this.stockSymbol);
-      this.loadWatchlist(); // Call loadWatchlist here to refresh the watchlist
+      this.loadWatchlist();
     }
   }
 
@@ -143,7 +146,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
     buyModalReference.componentInstance.stocksymbol = this.stockSymbol;
     buyModalReference.componentInstance.currentPrice =
       this.stockInfo?.stockPriceDetails?.c;
-    buyModalReference.componentInstance.moneyInWallet = this.moneyInWallet;
+    // buyModalReference.componentInstance.moneyInWallet = this.moneyInWallet;
     buyModalReference.componentInstance.currentPortfolioData =
       this.portfolioData;
     console.log('Current portfolio data:', this.portfolioData);
@@ -168,13 +171,14 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
     sellModalReference.componentInstance.stocksymbol = this.stockSymbol;
     sellModalReference.componentInstance.currentPrice =
       this.stockInfo?.stockPriceDetails?.c;
-    sellModalReference.componentInstance.moneyInWallet = this.moneyInWallet;
+    // sellModalReference.componentInstance.moneyInWallet = this.moneyInWallet;
     sellModalReference.componentInstance.currentPortfolioData =
       this.portfolioData;
     //TODO: Add the current portfolio data
     sellModalReference.result.then(
       (result) => {
         this.displaySellAlert = true;
+        this.refreshPortfolioData();
       },
       (reason) => {
         console.log('Modal dismissed with:', reason);
