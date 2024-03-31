@@ -8,6 +8,7 @@ import { PortfolioService } from '../../core/services/portfolio.service';
 import { StockSearchService } from '../../core/services/stock-search.service';
 import { StockBuyModalComponent } from '../utility-components/buy-modal/buy-modal.component';
 import { StockSellModalComponent } from '../utility-components/sell-modal/sell-modal.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-portfolio',
@@ -35,7 +36,8 @@ export class PortfolioComponent implements OnInit {
     private portfolioService: PortfolioService,
     private stockSearchService: StockSearchService,
     private http: HttpClient,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -127,7 +129,9 @@ export class PortfolioComponent implements OnInit {
                     stocksymbol: this.portfolio[i].stocksymbol,
                     companyName: companyInfoData.name,
                     stockquantity: this.portfolio[i].quantity,
-                    averagecost: parseFloat(Number(averagecostcurrent).toFixed(2)),
+                    averagecost: parseFloat(
+                      Number(averagecostcurrent).toFixed(2)
+                    ),
                     currentprice: currentprice,
                     change: arrowDirection,
                     marketvalue: parseFloat(
@@ -163,6 +167,9 @@ export class PortfolioComponent implements OnInit {
       },
     });
     // this.isLoading = false;
+  }
+  searchStock(symbol: string): void {
+    this.router.navigate(['/search', symbol]);
   }
 
   openBuyModal(stocksymbol: any, currentPrice: any): void {

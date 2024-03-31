@@ -23,12 +23,12 @@
 
     <div *ngIf="!isLoading" class="row">
         <h4>Money in Wallet: {{ oldWalletMoney | currency }}</h4>
-        <div *ngIf="this.isEmpty && !isLoading" class="alert alert-warning text-center" role="alert">
+        <div *ngIf="this.isEmpty && !isLoading"class="alert alert-warning text-center" role="alert">
             Currently you don't have any stock.
         </div>
         <div class="col-12 mb-3" *ngFor="let record of displayData">
-            <div class="card">
-                <div class="fs-3 card-header">
+            <div class="card" >
+                <div class="fs-3 card-header"  style="cursor: pointer;" (click)="searchStock(record.stocksymbol)" >
                     {{record?.stocksymbol}}
                     <span class="fs-5 text-muted">
                         {{ record?.companyName}}
