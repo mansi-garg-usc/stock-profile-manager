@@ -92,7 +92,7 @@ export class StockSearchService {
     return this.previousRouteData;
   }
 
-  private baseUrl = 'http://localhost:8000/api';
+  private baseUrl = '/api';
 
   formatDate(dateToBeFormatted: Date) {
     const year = dateToBeFormatted.getFullYear();
