@@ -1,25 +1,28 @@
-import { CommonModule, formatDate } from '@angular/common';
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {
   BehaviorSubject,
   catchError,
   finalize,
-  Observable,
   of,
   Subscription,
   switchMap,
   tap,
-  throwError,
 } from 'rxjs';
-import { StockSearchService } from '../../core/services/stock-search.service';
-import { TabsComponent } from '../tabs/tabs.component';
-import { SimpleChanges } from '@angular/core';
-import { StockBuyModalComponent } from '../utility-components/buy-modal/buy-modal.component';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { StockSellModalComponent } from '../utility-components/sell-modal/sell-modal.component';
-import { ActivatedRoute } from '@angular/router';
-import { WatchlistService } from '../../core/services/watchlist-service';
 import { PortfolioService } from '../../core/services/portfolio.service';
+import { StockSearchService } from '../../core/services/stock-search.service';
+import { WatchlistService } from '../../core/services/watchlist-service';
+import { TabsComponent } from '../tabs/tabs.component';
+import { StockBuyModalComponent } from '../utility-components/buy-modal/buy-modal.component';
+import { StockSellModalComponent } from '../utility-components/sell-modal/sell-modal.component';
 
 @Component({
   selector: 'app-stock-details',
@@ -243,8 +246,12 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
   }
 
   handleSearchResults(results: any) {
+    console.log('handle search results called in details component:');
+
     if (results && results.length > 0 && this.stockSymbol !== '') {
       this.isLoading = false;
+      this.currentDateFormatted = this.formatTodayDate(new Date());
+      console.log('Current date:', this.currentDateFormatted);
       this.stockInfo = results;
       this.setMarketStatus();
       this.checkChangePercentage(this.stockInfo?.stockPriceDetails?.dp);
@@ -356,6 +363,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
       null
     ) {
       this.stockInfoSubject.next(this.stockInfo);
+      this.currentDateFormatted = this.formatTodayDate(new Date());
       if (
         changes['stockSymbol'] &&
         changes['stockSymbol'].currentValue !==
@@ -500,6 +508,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
 
     const timestamp = this.stockInfo?.stockPriceDetails?.t * 1000;
     const date = new Date(timestamp);
+    const todayDate = new Date();
 
     if (isNaN(date.getTime())) {
       // Check if date is invalid
@@ -519,11 +528,16 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
 
     // Get the day of the week (0 for Sunday, 1 for Monday, ..., 6 for Saturday)
     const dayOfWeek = date.getDay();
+    const dateOfData = date.getDate();
+    const monthOfData = date.getMonth() + 1;
+    const dateOfToday = todayDate.getDate();
+    const monthOfToday = todayDate.getMonth() + 1;
 
+    const isDayInPast = dateOfData < dateOfToday || monthOfData < monthOfToday;
     // Define market open and close hours
-    const marketOpenHour = 9; // 9:30 AM in Eastern Time
+    const marketOpenHour = 6; // 9:30 AM in Eastern Time
     const marketOpenMinute = 30;
-    const marketCloseHour = 16; // 4:00 PM in Eastern Time
+    const marketCloseHour = 13; // 4:00 PM in Eastern Time
     const marketCloseMinute = 0;
 
     // Check if the day is between Monday and Friday
@@ -536,7 +550,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
       (hours < marketCloseHour ||
         (hours === marketCloseHour && minutes < marketCloseMinute));
 
-    if (isWeekday && isTimeWithinMarketHours) {
+    if (!isDayInPast && isWeekday && isTimeWithinMarketHours) {
       this.isMarketOpen.next(true);
       return true;
     } else {
