@@ -9,25 +9,31 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-12 mb-2">
-                <p class="mb-0">Current Price: <strong>{{ currentPrice }}</strong></p>
+                <p class="mb-0">Current Price: {{ currentPrice }}</p>
             </div>
             <div class="col-12 mb-2">
-                <p class="mb-0">Money in Wallet: <strong>{{ oldWalletMoney | currency}}</strong></p>
+                <p class="mb-0">Money in Wallet: {{ oldWalletMoney | currency }}</p>
             </div>
-            <div class="col-12 mb-2">
-                <label for="quantity">Quantity:</label>
-                <input type="number" class="form-control" [(ngModel)]="quantity" (ngModelChange)="sellValidation()">
+            <div class="col-12 mb-2 d-flex align-items-center">
+                <label for="quantity" class="me-2">Quantity:</label>
+                <input type="number" id="quantity" class="form-control w-auto" [(ngModel)]="quantity"
+                    (ngModelChange)="sellValidation()">
             </div>
-            <p class="text-danger" *ngIf="!canSell && quantity > 0">You cannot sell the stocks that you don't have!</p>
-
+            <div class="col-12 mt-1">
+                <p class="text-danger" *ngIf="!canSell && quantity > 0">You cannot sell the stocks that you don't have!
+                </p>
+            </div>
         </div>
     </div>
 </div>
 <div class="modal-footer">
-
-    <div class="col-12">
-        <p class="mb-0">Total: <strong>{{ getTotal() }}</strong></p>
+    <div class="row w-100">
+        <div class="col text-start">
+            <p class="mb-0">Total: {{ getTotal() }}</p>
+        </div>
+        <div class="col text-end">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal"
+                [disabled]="!canSell || this.quantity <= 0" (click)="sellStock()">Sell</button>
+        </div>
     </div>
-    <button type="button" class="btn btn-success" data-bs-dismiss="modal" [disabled]="!canSell ||  this.quantity<=0"
-        (click)="sellStock()">Sell</button>
 </div>

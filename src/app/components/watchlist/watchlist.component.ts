@@ -18,6 +18,7 @@ export class WatchlistComponent {
   // isLoading: boolean = true;
   isEmpty: boolean = false;
   isLoading: boolean = true;
+  direction: boolean = true;
 
   showEmptyWatchlistMessage = new BehaviorSubject<boolean>(false);
 
@@ -55,6 +56,14 @@ export class WatchlistComponent {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  checkChangePercentage(value: number) {
+    if (value > 0) {
+      this.direction = true;
+    } else {
+      this.direction = false;
+    }
+  }
+
   async fetchWatchlist(): Promise<void> {
     console.log('Fetching watchlist data...');
     console.log('watchlist entires', this.watchlistEntries);
@@ -74,6 +83,7 @@ export class WatchlistComponent {
           console.log('watchlist length is not 0');
           console.log('Fetched Watchlist Data:', infoArray);
           this.watchlistInfo = infoArray;
+          this.checkChangePercentage(this.watchlistInfo[0].changePercentage);
         }
         // this.showEmptyWatchlistMessage.next(this.watchlistInfo.length === 0);
       },

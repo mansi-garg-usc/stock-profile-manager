@@ -2,7 +2,7 @@
     <div class="row justify-content-center">
         <div class="col-sm-12 col-md-8 col-lg-6">
             <div class="text-center mb-4">
-                <h2>STOCK SEARCH</h2>
+                <h2 class="display-6 display-md-5 display-lg-4 my-2">STOCK SEARCH</h2>
             </div>
             <div class="input-group" matAutocompleteOrigin #origin="matAutocompleteOrigin">
                 <input type="text" class="form-control" placeholder="Enter stock ticker symbol" aria-label="Search"
@@ -18,22 +18,32 @@
                 </div>
             </div>
             <div>
-                <mat-autocomplete #auto="matAutocomplete" (optionSelected)="searchStock($event)">
-                    <mat-option *ngIf="(isAutocompleteLoading | async) && !(filteredOptions | async)?.length">
+                <mat-autocomplete #auto="matAutocomplete"
+                    (optionSelected)="searchStock($event.option.value.displaySymbol)">
+                    <mat-option *ngIf="(isAutocompleteLoading) && !(filteredOptions | async)?.length">
                         <mat-progress-spinner mode="indeterminate" diameter="20"></mat-progress-spinner>
                     </mat-option>
-                    <mat-option *ngFor="let option of filteredOptions | async" [value]="option">{{ option
-                        }}</mat-option>
+                    <mat-option *ngFor="let option of filteredOptions | async" [value]="option">{{ option.displaySymbol
+                        }} | {{option.description}}</mat-option>
                 </mat-autocomplete>
             </div>
             <div class="row mx-1">
-                <div *ngIf="invalidEntry" class="alert text-center alert-danger alert-dismissible fade show invalidalert" role="alert">
-                  No data found. Please enter a valid Ticker
-                  <!-- <button type="button" class="btn-close" aria-label="Close" (click)="showInvalidAlert = false"></button> -->
+                <div *ngIf="invalidEntry"
+                    class="alert text-center alert-danger alert-dismissible fade show invalidalert" role="alert">
+                    No data found. Please enter a valid Ticker
+                    <!-- <button type="button" class="btn-close" aria-label="Close" (click)="showInvalidAlert = false"></button> -->
                 </div>
-              </div>
+            </div>
         </div>
     </div>
 </div>
-<app-stock-details *ngIf="stockInfo && !invalidEntry" [stockInfo]="stockInfo" [stockSymbol]="selectedStockSymbol"
+<div *ngIf="!isLoaded" style="display: flex; justify-content: center;"
+    class="loading-spinner d-flex justify-content-center align-items-center">
+    <div class="spinner-border" style="width: 3rem; height: 3rem; margin-top: 4%; color: darkblue" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>
+<app-stock-details
+    *ngIf="stockInfo && !invalidEntry && !(stockInfo.companyInfo== null && stockInfo.stockPriceDetails == null && stockInfo.companyPeers == null && stockInfo.chartsData == null && stockInfo.summaryChart == null)"
+    [stockInfo]="stockInfo" [stockSymbol]="selectedStockSymbol"
     [searchStock]="searchStock.bind(this)"></app-stock-details>

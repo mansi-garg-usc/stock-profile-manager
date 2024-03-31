@@ -1,5 +1,3 @@
-
-
 <!-- <div *ngIf="earnings" class="container stock-details-layout">
     <div class="row">
         <div class="col-12 col-sm-4">
@@ -12,38 +10,46 @@
 <div id="container"></div>
 <div id="container1"></div> -->
 <div *ngIf="sentimentsAggregate" class="row">
-    <div class="col-12 col-sm-5" style="margin:0 auto;">
-        <table>
-            <tr>
-            <th>{{stockSymbol}}</th>
-            <th scope="col">MSPR</th>
-            <th scope="col">Change</th>
-            </tr>
-        
-            <tr>
-            <th>Total</th>
-            <td>{{(sentimentsAggregate.mt)}}</td>
-            <td>{{sentimentsAggregate.ct}}</td>
-            </tr>
-        
-            <tr>
-            <th>Positive</th>
-            <td>{{sentimentsAggregate.mp}}</td>
-            <td>{{sentimentsAggregate.cp}}</td>
-            </tr>
-            
-            <tr>
-            <th>Negative</th>
-            <td>{{sentimentsAggregate.mn}}</td>
-            <td>{{sentimentsAggregate.cn}}</td>
-            </tr>
+    <div class="col-md col-lg-6" style="margin:0 auto;">
+        <p class="my-3 fs-4 text-center">Insider Sentiments</p>
+        <table class="table table-center">
+            <thead>
+                <tr>
+                    <th scope="col">{{stockSymbol}}</th>
+                    <th scope="col" scope="col">MSPR</th>
+                    <th scope="col" scope="col">Change</th>
+                </tr>
+
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">Total</th>
+                    <td>{{(sentimentsAggregate.mt)}}</td>
+                    <td>{{sentimentsAggregate.ct}}</td>
+                </tr>
+
+
+                <tr>
+                    <th scope="row">Positive</th>
+                    <td>{{sentimentsAggregate.mp}}</td>
+                    <td>{{sentimentsAggregate.cp}}</td>
+                </tr>
+
+
+                <tr>
+                    <th scope="row">Negative</th>
+                    <td>{{sentimentsAggregate.mn}}</td>
+                    <td>{{sentimentsAggregate.cn}}</td>
+                </tr>
+            </tbody>
+
         </table>
     </div>
 </div>
 
 
-<div class="row">
-    <div id="container1" class="col-12 col-sm-5"></div>
+<div class="row mt-2 mb-3">
+    <div id="container1" class="col-12 col-sm-5 mt-1"></div>
     <div class="col-12 col-sm-2"></div>
-    <div id="container" class="col-12 col-sm-5"></div>
+    <div id="container" class="col-12 col-sm-5 mt-1"></div>
 </div>

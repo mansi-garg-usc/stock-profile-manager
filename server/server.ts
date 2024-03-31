@@ -29,8 +29,8 @@ let wallet: any;
 
 const app = express();
 const finnhub_api_key = 'cnih581r01qj1g5q4jlgcnih581r01qj1g5q4jm0';
-const polygon_api_key = 'Veu4EyzzJTduRuvf0Y1woy5mwtn1mMIA';
-const port = process.env['PORT'] || 8000;;
+const polygon_api_key = 'fP1uPp6FRhYiEw1L7u9Z_XcgMoQDkuFc';
+const port = process.env['PORT'] || 8000;
 app.set('trust proxy', true);
 
 let dateToday = formatDate(new Date());
@@ -70,9 +70,15 @@ async function startServer() {
     // app.use(
     //   express.static(path.join(__dirname, '../dist/stock-portfolio-manager'))
     // );
-    app.use(express.static(path.join(__dirname, 'dist/stock-portfolio-manager/browser')));
+    app.use(
+      express.static(
+        path.join(__dirname, 'dist/stock-portfolio-manager/browser')
+      )
+    );
     app.get('/', (req, res) => {
-      res.sendFile(path.join(__dirname, 'dist/stock-portfolio-manager/browser/index.html'));
+      res.sendFile(
+        path.join(__dirname, 'dist/stock-portfolio-manager/browser/index.html')
+      );
     });
     app.get('/api', (req, res) => {
       res.json({ message: 'API Response' });
@@ -139,6 +145,27 @@ async function startServer() {
           console.error('Axios Error:', error.message); // Log detailed error message
           res.status(500).send(`Error retrieving history - ${error.message}`);
         });
+    });
+
+    // Company's hourly highcharts
+    app.get('/api/highchartsHourly', async (req, res) => {
+      const stockTicker = req.query['symbol'];
+      const fromDate = req.query['fromDate'];
+      const toDate = req.query['toDate'];
+      const highchartsAPI = polygon_api_key;
+      try {
+        const url = `https://api.polygon.io/v2/aggs/ticker/${stockTicker}/range/1/hour/${fromDate}/${toDate}?adjusted=true&sort=asc&apiKey=${highchartsAPI}`;
+        const polygonResponse = await axios.get(url);
+        console.log('Stock Ticker:', stockTicker);
+        console.log('polygonkey:', highchartsAPI);
+        console.log('fromDate:', fromDate);
+        console.log('toDate:', toDate);
+        console.log('History Data:', polygonResponse.data);
+        res.json(polygonResponse.data);
+      } catch (error) {
+        console.error('Error retrieving hourly highcharts:', error);
+        res.status(500).send(`Error retrieving hourly highcharts - ${error}`);
+      }
     });
 
     // Companies recommendation trends

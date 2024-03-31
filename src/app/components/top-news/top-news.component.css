@@ -16,14 +16,11 @@ img {
 .news-card {
   cursor: pointer;
 }
-/* 
-@include media-breakpoint-down(sm) {
-  .image-fit {
-    width: 100%;
-    height: 150px;
-  } */
 
-  /* img {
-    object-fit: cover;
-  }
-} */
+.truncate-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

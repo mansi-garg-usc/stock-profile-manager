@@ -12,7 +12,7 @@ export interface PortfolioRecord {
   providedIn: 'root',
 })
 export class PortfolioService {
-  private baseUrl = '/api';
+  private baseUrl = 'http://localhost:8000/api';
   private _walletMoneySubject = new BehaviorSubject<number>(0);
 
   constructor(private http: HttpClient) {

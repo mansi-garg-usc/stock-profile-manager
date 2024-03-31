@@ -1,8 +1,9 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, formatDate } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import {
   BehaviorSubject,
   catchError,
+  finalize,
   Observable,
   of,
   Subscription,
@@ -54,6 +55,10 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
   isLoading: boolean = true;
   displayAddedToWatchlistAlert: boolean = false;
   displayRemovedFromWatchlistAlert: boolean = false;
+  currentDate = new Date();
+  currentDateFormatted = this.formatTodayDate(this.currentDate);
+  invalidEntry: boolean = false;
+  displayDetails = false;
 
   // isPresentInWatchlist: boolean = localStorage
   //   .getItem('watchlist')
@@ -76,78 +81,170 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
   sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
+  formatTodayDate(dateToBeFormatted: Date) {
+    const year = dateToBeFormatted.getFullYear();
+    const month = (dateToBeFormatted.getMonth() + 1)
+      .toString()
+      .padStart(2, '0');
+    const day = dateToBeFormatted.getDate().toString().padStart(2, '0');
+    const hours = dateToBeFormatted.getHours().toString().padStart(2, '0');
+    const minutes = dateToBeFormatted.getMinutes().toString().padStart(2, '0');
+    const seconds = dateToBeFormatted.getSeconds().toString().padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  }
+
+  // async ngOnInit() {
+  //   this.invalidEntry = false;
+  //   console.log('Current date:', this.currentDateFormatted);
+  //   console.log('calling load watchlist for:', this.stockSymbol);
+  //   this.isLoading = true;
+  //   await this.sleep(500); // TODO
+
+  //   this.loadWatchlist();
+  //   this.subscription = this.stockSearchService.exposedSearchResult.subscribe({
+  //     next: (results) => {
+  //       if (results && results.length > 0) {
+  //         this.handleSearchResults(results);
+  //       }
+  //     },
+  //     error: (error) =>
+  //       console.error('Error while fetching stock details:', error),
+  //   });
+
+  //   this.subscription.add(
+  //     this.activatedRoute.params
+  //       .pipe(
+  //         switchMap((params) => {
+  //           // this.isLoading = true;
+  //           const ticker = params['ticker'];
+  //           if (ticker) {
+  //             this.displayAddedToWatchlistAlert = false;
+  //             this.displayRemovedFromWatchlistAlert = false;
+  //             // this.isLoading = true;
+  //             return this.stockSearchService.searchStock(ticker); // Ensure searchStock returns an Observable
+  //           }
+  //           return of({});
+  //         })
+  //         // finalize(() => (this.isLoading = false))
+  //       )
+  //       .subscribe((results) => {
+  //         if (results && Object.keys(results).length > 0) {
+  //           this.handleSearchResults(results);
+  //           this.portfolioService.getPortfolio().subscribe({
+  //             next: (data) => {
+  //               this.portfolioData = data;
+  //               this.portfolioData.some((entry: any) => {
+  //                 if (entry?.stocksymbol === this.stockSymbol.toUpperCase()) {
+  //                   this.isPresentInPortfolio = true;
+  //                   this.indexInWatchlist = this.portfolioData.indexOf(entry);
+  //                 } else {
+  //                   this.isPresentInPortfolio = false;
+  //                 }
+  //               });
+  //             },
+  //             error: (error) => {
+  //               this.invalidEntry = true;
+  //               console.error(
+  //                 'Error fetching portfolio data in stock details:',
+  //                 error
+  //               );
+  //             },
+  //           });
+  //         }
+  //       })
+  //   );
+
+  //   this.watchlistSubscription =
+  //     this.watchlistService.exposedWatchlistEntries.subscribe(
+  //       (watchlistEntries) => {
+  //         console.log('Watchlist entries:', watchlistEntries);
+  //         // Check if the current stock symbol is present in the watchlist
+  //         this.isPresentInWatchlist = watchlistEntries.some((entry: any) => {
+  //           entry?.symbol === this.stockSymbol.toUpperCase();
+  //           this.indexInWatchlist = watchlistEntries.indexOf(entry);
+  //         });
+  //       }
+  //     );
+
+  //   // this.isLoading = false;
+  //   // this.setWatchlistEntry();
+  // }
 
   async ngOnInit() {
+    this.invalidEntry = false;
+    console.log('Current date:', this.currentDateFormatted);
     console.log('calling load watchlist for:', this.stockSymbol);
     this.isLoading = true;
-    await this.sleep(500); // TODO
 
+    await this.sleep(500); // Simulated loading time
+
+    // Load the watchlist initially
     this.loadWatchlist();
-    this.subscription = this.stockSearchService.exposedSearchResult.subscribe({
-      next: (results) => {
-        if (results && results.length > 0) {
-          this.handleSearchResults(results);
-        }
-      },
-      error: (error) =>
-        console.error('Error while fetching stock details:', error),
-    });
 
+    // Subscription to handle route parameters and fetch stock details
     this.subscription.add(
       this.activatedRoute.params
         .pipe(
+          tap(() => {
+            this.isLoading = true; // Ensure loader is displayed when starting to fetch new data
+            this.displayAddedToWatchlistAlert = false;
+            this.displayRemovedFromWatchlistAlert = false;
+          }),
           switchMap((params) => {
             const ticker = params['ticker'];
-            if (ticker) {
-              return this.stockSearchService.searchStock(ticker); // Ensure searchStock returns an Observable
+            if (ticker !== this.stockSymbol) {
+              return this.stockSearchService.searchStock(ticker);
             }
-            return of({});
-          })
+            return of(null); // Return null or an appropriate value if no ticker is provided
+          }),
+          tap((results) => {
+            // Handle the stock search results
+            console.log('Stock search results in stock details:', results);
+            if (
+              results &&
+              Object.keys(results).length > 0 &&
+              results !== null
+            ) {
+              this.handleSearchResults(results);
+            } else {
+              // this.stockInfo = null;
+              // this.invalidEntry = true; // Handle the case where no results are found or an invalid ticker is provided
+            }
+          }),
+          switchMap(() => this.portfolioService.getPortfolio()), // Fetch portfolio data after handling stock search results
+          catchError((error) => {
+            console.error('Error during data fetching:', error);
+            // this.invalidEntry = true;
+            return of(null); // Handle errors and continue the observable chain
+          }),
+          finalize(() => (this.isLoading = false)) // Ensure the loader is hidden after all operations are complete
         )
-        .subscribe((results) => {
-          if (results && Object.keys(results).length > 0) {
-            this.handleSearchResults(results);
-            this.portfolioService.getPortfolio().subscribe({
-              next: (data) => {
-                this.portfolioData = data;
-                this.portfolioData.some((entry: any) => {
-                  if (entry?.stocksymbol === this.stockSymbol.toUpperCase()) {
-                    this.isPresentInPortfolio = true;
-                    this.indexInWatchlist = this.portfolioData.indexOf(entry);
-                  } else {
-                    this.isPresentInPortfolio = false;
-                  }
-                });
-              },
-              error: (error) => {
-                console.error(
-                  'Error fetching portfolio data in stock details:',
-                  error
-                );
-              },
-            });
+        .subscribe((portfolioData) => {
+          // Handle portfolio data
+          if (portfolioData) {
+            this.portfolioData = portfolioData;
+            this.isPresentInPortfolio = portfolioData.some(
+              (entry) => entry?.stocksymbol === this.stockSymbol.toUpperCase()
+            );
           }
         })
     );
 
+    // Subscription to watchlist changes
     this.watchlistSubscription =
       this.watchlistService.exposedWatchlistEntries.subscribe(
         (watchlistEntries) => {
           console.log('Watchlist entries:', watchlistEntries);
-          // Check if the current stock symbol is present in the watchlist
-          this.isPresentInWatchlist = watchlistEntries.some((entry: any) => {
-            entry?.symbol === this.stockSymbol.toUpperCase();
-            this.indexInWatchlist = watchlistEntries.indexOf(entry);
-          });
+          this.isPresentInWatchlist = watchlistEntries.some(
+            (entry: any) => entry?.symbol === this.stockSymbol.toUpperCase()
+          );
         }
       );
-
-    this.isLoading = false;
-    // this.setWatchlistEntry();
   }
 
   handleSearchResults(results: any) {
     if (results && results.length > 0 && this.stockSymbol !== '') {
+      this.isLoading = false;
       this.stockInfo = results;
       this.setMarketStatus();
       this.checkChangePercentage(this.stockInfo?.stockPriceDetails?.dp);
@@ -156,11 +253,17 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
       );
       this.marketStatusString = this.isMarketOpen.value
         ? 'Market is Open'
-        : 'Market is Closed';
+        : `Market closed on ${this.dateTimestamp}`;
       this.showTabs = true;
       this.stockInfoSubject.next(this.stockInfo);
       this.stockSearchService.startPeriodicUpdate(this.stockSymbol);
       this.loadWatchlist();
+      // this.isLoading = false;
+    } else {
+      this.isLoading = false;
+      // this.stockInfoSubject.next(null);
+      // this.invalidEntry = true;
+      console.log('here');
     }
   }
 
@@ -226,7 +329,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
             } else {
               this.isPresentInPortfolio = false;
             }
-          })
+          });
         } else {
           this.isPresentInPortfolio = false;
           this.indexInWatchlist = -1;
@@ -247,38 +350,57 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    this.stockInfoSubject.next(this.stockInfo);
-    this.setMarketStatus();
+    this.isLoading = true;
     if (
-      changes['stockSymbol'] &&
-      changes['stockSymbol'].currentValue !==
-        changes['stockSymbol'].previousValue
+      (this.stockInfo && this.stockInfo?.stockPriceDetails !== undefined) ||
+      null
     ) {
-      this.stockSymbol = changes['stockSymbol'].currentValue.toUpperCase();
-      this.updateWatchlistStatus();
-    }
-    if (this.stockInfo?.hasOwnProperty('companyInfo')) {
-      this.checkChangePercentage(this.stockInfo?.stockPriceDetails?.dp);
-      this.dateTimestamp = this.formatDate(
-        this.stockInfo?.stockPriceDetails?.t
-      );
-      this.showTabs = true;
-      this.marketStatusString = this.isMarketOpen?.value
-        ? 'Market is Open'
-        : 'Market is Closed';
-    }
+      this.stockInfoSubject.next(this.stockInfo);
+      if (
+        changes['stockSymbol'] &&
+        changes['stockSymbol'].currentValue !==
+          changes['stockSymbol'].previousValue
+      ) {
+        this.setMarketStatus();
+        this.stockSymbol = changes['stockSymbol'].currentValue.toUpperCase();
+        this.updateWatchlistStatus();
+        this.isLoading = false;
+      }
+      if (this.stockInfo?.hasOwnProperty('companyInfo')) {
+        // this.setMarketStatus();
+        this.checkChangePercentage(this.stockInfo?.stockPriceDetails?.dp);
+        this.dateTimestamp = this.convertEpochToPST(
+          this.stockInfo?.stockPriceDetails?.t
+        );
+        let dateForMarketStatus = new Date(
+          this.stockInfo?.stockPriceDetails?.t * 1000
+        );
 
-    //this.loadWatchlist();
-    //console.log('Is market open in ngOnChanges:', this.isMarketOpen?.value);
-    // React to changes in stockSymbol, especially for a new stock search
-    if (
-      changes['stockSymbol'] &&
-      this.stockSymbol &&
-      this.isMarketOpen?.value
-    ) {
-      this.stockSearchService.startPeriodicUpdate(this.stockSymbol);
-      console.log('Periodic update started for symbol:', this.stockSymbol);
+        const year = dateForMarketStatus.getFullYear().toString();
+        const month = (dateForMarketStatus.getMonth() + 1)
+          .toString()
+          .padStart(2, '0');
+        const day = dateForMarketStatus.getDate().toString().padStart(2, '0');
+        this.showTabs = true;
+        this.marketStatusString = this.isMarketOpen?.value
+          ? 'Market is Open'
+          : `Market closed on ${year}-${month}-${day} 13:00:00`;
+        this.isLoading = false;
+      }
+
+      //this.loadWatchlist();
+      //console.log('Is market open in ngOnChanges:', this.isMarketOpen?.value);
+      // React to changes in stockSymbol, especially for a new stock search
+      if (
+        changes['stockSymbol'] &&
+        this.stockSymbol &&
+        this.isMarketOpen?.value
+      ) {
+        this.stockSearchService.startPeriodicUpdate(this.stockSymbol);
+        console.log('Periodic update started for symbol:', this.stockSymbol);
+      }
     }
+    // this.isLoading = false;
   }
 
   private updateWatchlistStatus(): void {
@@ -319,28 +441,108 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
   }
 
   formatDate(unixTimeStamp: any) {
-    const date = new Date(unixTimeStamp * 1000); // Convert to milliseconds
-    const year = date.getUTCFullYear();
-    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0'); // Month is 0-indexed, add 1 to adjust
-    const day = date.getUTCDate().toString().padStart(2, '0');
-    const hours = date.getUTCHours().toString().padStart(2, '0');
-    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
-    const seconds = date.getUTCSeconds().toString().padStart(2, '0');
+    const date = new Date(unixTimeStamp * 1000);
+    const year = date.getFullYear().toString();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
 
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   }
 
-  setMarketStatus() {
-    this.time = this.stockInfo?.stockPriceDetails?.t * 1000;
-    let currentTime = new Date().getTime();
-    let timeDiff = currentTime - this.time;
-    let fiveMinutes = 5 * 60 * 1000;
-    if (timeDiff < fiveMinutes) {
-      this.isMarketOpen?.next(true);
-    } else {
-      this.isMarketOpen?.next(false);
+  convertEpochToPST(epoch: number): string {
+    const date = new Date(epoch * 1000);
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZone: 'America/Los_Angeles',
+    };
+
+    let formattedDate = date.toLocaleString('en-US', options);
+    formattedDate = formattedDate.replace(
+      /(\d{2})\/(\d{2})\/(\d{4}),/,
+      '$3-$1-$2'
+    ); // Adjust format to MM-DD-YYYY
+
+    return formattedDate;
+  }
+
+  // setMarketStatus() {
+  //   this.time = this.stockInfo?.stockPriceDetails?.t * 1000;
+  //   let currentTime = new Date().getTime();
+  //   let timeDiff = currentTime - this.time;
+  //   let fiveMinutes = 5 * 60 * 1000;
+  //   if (timeDiff < fiveMinutes) {
+  //     this.isMarketOpen?.next(true);
+  //   } else {
+  //     this.isMarketOpen?.next(false);
+  //   }
+  //   //console.log('Is market open:', this.isMarketOpen?.value);
+  // }
+
+  setMarketStatus(): boolean {
+    // Ensure stockInfo and stockPriceDetails are defined and contain a valid timestamp
+    if (
+      !this.stockInfo ||
+      !this.stockInfo?.stockPriceDetails ||
+      !this.stockInfo?.stockPriceDetails?.t
+    ) {
+      console.error('Invalid or missing timestamp');
+      return false;
     }
-    //console.log('Is market open:', this.isMarketOpen?.value);
+
+    const timestamp = this.stockInfo?.stockPriceDetails?.t * 1000;
+    const date = new Date(timestamp);
+
+    if (isNaN(date.getTime())) {
+      // Check if date is invalid
+      console.error('Invalid date created from timestamp');
+      return false;
+    }
+
+    // Convert the date to Eastern Time
+    const options: Intl.DateTimeFormatOptions = {
+      //timeZone: 'America/New_York', // Uncomment to set time zone
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+    };
+    const dateFormatter = new Intl.DateTimeFormat('en-US', options);
+    const [hours, minutes] = dateFormatter.format(date).split(':').map(Number);
+
+    // Get the day of the week (0 for Sunday, 1 for Monday, ..., 6 for Saturday)
+    const dayOfWeek = date.getDay();
+
+    // Define market open and close hours
+    const marketOpenHour = 9; // 9:30 AM in Eastern Time
+    const marketOpenMinute = 30;
+    const marketCloseHour = 16; // 4:00 PM in Eastern Time
+    const marketCloseMinute = 0;
+
+    // Check if the day is between Monday and Friday
+    const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
+
+    // Check if the time is between market open and close times
+    const isTimeWithinMarketHours =
+      (hours > marketOpenHour ||
+        (hours === marketOpenHour && minutes >= marketOpenMinute)) &&
+      (hours < marketCloseHour ||
+        (hours === marketCloseHour && minutes < marketCloseMinute));
+
+    if (isWeekday && isTimeWithinMarketHours) {
+      this.isMarketOpen.next(true);
+      return true;
+    } else {
+      this.isMarketOpen.next(false);
+      return false;
+    }
   }
 
   setWatchlistEntry(): void {

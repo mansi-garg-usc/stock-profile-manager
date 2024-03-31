@@ -1,34 +1,38 @@
 <div *ngIf="stockInfo$ | async as stockInfo" class="container stock-summary-layout">
-    <div class="row">
-        <div class="col-md-6">
+    <div class="row my-4">
+        <div class="col-sm">
             <div class="row">
-                <div class="col-12">
-                    <p><strong>High Price:</strong> {{ stockInfo?.stockPriceDetails?.h }}</p>
-                    <p><strong>Low Price:</strong> {{ stockInfo?.stockPriceDetails?.l }}</p>
-                    <p><strong>Open Price:</strong> {{ stockInfo?.stockPriceDetails?.o }}</p>
-                    <p><strong>Prev. Close:</strong> {{ stockInfo?.stockPriceDetails?.pc }}</p>
+                <div class="col-lg-6 col-sm-12 text-center justify">
+                    <p style="margin: 0"><strong>High Price:</strong> {{ stockInfo?.stockPriceDetails?.h }}</p>
+                    <p style="margin: 0"><strong>Low Price:</strong> {{ stockInfo?.stockPriceDetails?.l }}</p>
+                    <p style="margin: 0"><strong>Open Price:</strong> {{ stockInfo?.stockPriceDetails?.o }}</p>
+                    <p style="margin: 0"><strong>Prev. Close:</strong> {{ stockInfo?.stockPriceDetails?.pc }}</p>
+                </div>
+                <div class="col-lg-6 col-sm-0">
                 </div>
             </div>
-            <div class="row">
-                <div class="col-12 mt-3 pl-8">
-                    <h5>About the company</h5>
+            <div class="row text-center my-5">
+                <div>
+                    <p class="fs-5"><u><b>About the company</b></u></p>
                     <p><strong>IPO Start Date:</strong> {{ stockInfo?.companyInfo?.ipo }}</p>
                     <p><strong>Industry:</strong> {{ stockInfo?.companyInfo?.finnhubIndustry }}</p>
-                    <p><strong>Webpage:</strong>
-                        <a [href]="stockInfo?.companyInfo?.weburl">{{ stockInfo?.companyInfo?.weburl }}</a>
+                    <p><strong>Webpage: </strong>
+                        <a [href]="stockInfo?.companyInfo?.weburl" target="_blank">{{ stockInfo?.companyInfo?.weburl
+                            }}</a>
                     </p>
-                    <p><strong>Company peers:</strong>
-                        <span *ngFor="let peer of peers; let isLast=last">
-                            <a href="javascript:void(0)" (click)="searchPeer(peer)">{{ peer }}</a><span *ngIf="
+                    <p><strong>Company peers:</strong></p>
+                    <span *ngFor="let peer of peers; let isLast=last" style="cursor: pointer;" class="link-primary">
+                        <a href="javascript:void(0)" (click)="searchPeer(peer)">{{ peer }}</a><span *ngIf="
                                 !isLast">, </span>
-                        </span>
-                    </p>
+                    </span>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <h5>{{stockSymbol.toUpperCase()}} Hourly Price Variation</h5>
-            <img src="path_to_your_chart_image" alt="{{stockSymbol}} Hourly Price Variation" class="img-fluid">
+        <div class="col">
+            <!-- <h5>{{stockSymbol.toUpperCase()}} Hourly Price Variation</h5> -->
+            <highcharts-chart [Highcharts]="Highcharts" [options]="chartOptions"
+                style="width: 100%; height: 400px; display: block;">
+            </highcharts-chart>
         </div>
     </div>
 </div>

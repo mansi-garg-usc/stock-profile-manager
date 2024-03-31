@@ -26,7 +26,7 @@ export class WatchlistService {
     this.fetchWatchlist().subscribe();
   }
 
-  private baseUrl = '/api';
+  private baseUrl = 'http://localhost:8000/api';
 
   fetchWatchlist(): Observable<any[]> {
     console.log('inside fetchWatchlist in service');

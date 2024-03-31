@@ -200,16 +200,28 @@ export class InsightsComponent implements OnInit, OnDestroy {
     Highcharts.chart('container', {
       chart: {
         type: 'spline',
+        backgroundColor: '#f0f0f0',
       },
       title: {
         text: 'Historical EPS Surprises',
+        align: 'center',
       },
       xAxis: {
         categories: this.splineData.xlabels,
+        maxPadding: 0.05,
+        accessibility: {
+          rangeDescription: 'Range: last 4 months',
+        },
       },
       yAxis: {
+        accessibility: {
+          rangeDescription: 'Range: 0 to 1',
+        },
         title: {
           text: 'Quarterly EPS',
+        },
+        labels: {
+          format: '{value}',
         },
       },
       plotOptions: {
@@ -217,18 +229,24 @@ export class InsightsComponent implements OnInit, OnDestroy {
           dataLabels: {
             enabled: true,
           },
-          enableMouseTracking: false,
+          // enableMouseTracking: false,
         },
+      },
+      tooltip: {
+        headerFormat: '<b>{series.name}</b><br/>',
+        pointFormat: 'Earnings: {point.y}',
       },
       series: [
         {
+          type: 'spline',
           name: 'Actual',
-          color: '#1AA7EC',
+          // color: '#1AA7EC',
           data: this.splineData.yactual,
         },
         {
+          type: 'spline',
           name: 'Estimate',
-          color: '#4B0082',
+          // color: '#4B0082',
           data: this.splineData.yestimate,
         },
       ],
@@ -239,9 +257,11 @@ export class InsightsComponent implements OnInit, OnDestroy {
     Highcharts.chart('container1', {
       chart: {
         type: 'column',
+        backgroundColor: '#f0f0f0',
       },
       title: {
         text: 'Recommendation Trends',
+        align: 'center',
       },
       xAxis: {
         categories: this.barData.labels,
@@ -263,26 +283,40 @@ export class InsightsComponent implements OnInit, OnDestroy {
           },
         },
       },
+      tooltip: {
+        headerFormat: '<b>{point.x}</b><br/>',
+        pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}',
+      },
       series: [
         {
           name: 'Strong Buy',
           data: this.barData.sb,
+          color: 'green',
+          type: 'column',
         },
         {
           name: 'Buy',
           data: this.barData.b,
+          type: 'column',
+          color: '#4aba67',
         },
         {
           name: 'Hold',
           data: this.barData.h,
+          type: 'column',
+          color: '#c7a748',
         },
         {
           name: 'Sell',
           data: this.barData.s,
+          type: 'column',
+          color: '#a56c1b',
         },
         {
           name: 'Strong Sell',
           data: this.barData.ss,
+          type: 'column',
+          color: '#a5321b',
         },
       ],
     } as any);

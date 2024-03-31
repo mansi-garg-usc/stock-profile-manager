@@ -21,10 +21,18 @@
 
 .share-icon {
   font-size: 2.5rem;
-  color: #4267B2;
+  color: #4267b2;
   margin-right: 0.5rem;
 }
 
 .details-text {
   color: grey;
+}
+
+.truncate-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

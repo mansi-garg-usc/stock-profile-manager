@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { forkJoin, Subscription } from 'rxjs';
+import { catchError, forkJoin, of, Subscription } from 'rxjs';
 import { PortfolioService } from '../../core/services/portfolio.service';
 import { StockSearchService } from '../../core/services/stock-search.service';
 import { StockBuyModalComponent } from '../utility-components/buy-modal/buy-modal.component';
@@ -42,10 +42,10 @@ export class PortfolioComponent implements OnInit {
     this.walletSubscription = this.portfolioService.walletMoney.subscribe({
       next: (money) => {
         this.oldWalletMoney = money;
-        // console.log(
-        //   'Wallet Money Updated in buy component:',
-        //   this.oldWalletMoney
-        // );
+        console.log(
+          'Wallet Money Updated in buy component:',
+          this.oldWalletMoney
+        );
       },
       error: (error) => {
         console.error('Error subscribing to walletMoney:', error);
@@ -69,25 +69,28 @@ export class PortfolioComponent implements OnInit {
           // console.log('Portfolio loaded:', data);
           if (this.portfolio.length == 0) {
             this.isEmpty = true;
+            this.isLoading = false;
           } else {
             this.isEmpty = false;
             for (let i = 0; i < this.portfolio.length; i++) {
               const companyInfo = this.http.get(
                 `${this.baseUrl}/company?symbol=${encodeURIComponent(
                   this.portfolio[i].stocksymbol
-                )}`
+                ).toUpperCase()}`
               );
               const stockPriceDetails = this.http.get(
                 `${this.baseUrl}/latestPrice?symbol=${encodeURIComponent(
                   this.portfolio[i].stocksymbol
-                )}`
+                ).toUpperCase()}`
               );
-              forkJoin({ companyInfo, stockPriceDetails }).subscribe({
+              const result = forkJoin({ companyInfo, stockPriceDetails });
+
+              result.subscribe({
                 next: (response) => {
                   companyInfoData = response.companyInfo;
                   stockPriceDetailsData = response.stockPriceDetails;
-                  // console.log('Company Info:', companyInfoData);
-                  // console.log('Stock Price Details:', stockPriceDetailsData);
+                  console.log('Company Info:', companyInfoData);
+                  console.log('Stock Price Details:', stockPriceDetailsData);
                   let currentprice = parseFloat(
                     stockPriceDetailsData.c.toFixed(2)
                   );
@@ -104,7 +107,7 @@ export class PortfolioComponent implements OnInit {
                   let changeDirection = currentprice - averagecostcurrent;
                   // console.log('averagecostcurrent:', averagecostcurrent);
                   let arrowDirection =
-                    currentprice - parseFloat(changeDirection.toFixed(2));
+                    currentprice - parseFloat(averagecostcurrent.toFixed(2));
                   // console.log('Arrow Direction:', arrowDirection);
                   let arrow: any;
                   let arrowcolor: any;
@@ -124,7 +127,7 @@ export class PortfolioComponent implements OnInit {
                     stocksymbol: this.portfolio[i].stocksymbol,
                     companyName: companyInfoData.name,
                     stockquantity: this.portfolio[i].quantity,
-                    averagecost: averagecostcurrent,
+                    averagecost: parseFloat(Number(averagecostcurrent).toFixed(2)),
                     currentprice: currentprice,
                     change: arrowDirection,
                     marketvalue: parseFloat(
@@ -148,6 +151,7 @@ export class PortfolioComponent implements OnInit {
               });
               this.stocks.push(this.portfolio[i].stocksymbol);
             }
+            this.isLoading = false;
           }
         } else {
           this.isEmpty = true;

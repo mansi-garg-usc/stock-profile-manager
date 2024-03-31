@@ -1,10 +1,20 @@
-<div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 70vh; width: 100%;">
-    <div class="spinner-border" style="width: 3rem; height: 3rem; color: darkblue" role="status">
-        <span class="sr-only">Loading...</span>
+<div class="row" style="max-height: 1000px">
+    <div *ngIf="isLoading && !invalidEntry" class="d-flex justify-content-center align-items-center"
+        style="height: 70vh; width: 100%; display: flex; justify-content: center;">
+        <div class=" m-5 spinner-border" style="width: 3rem; height: 3rem; color: darkblue" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+</div>
+<div class="row mx-1">
+    <div *ngIf="invalidEntry" class="alert text-center alert-danger alert-dismissible fade show invalidalert"
+        role="alert">
+        No data found. Please enter a valid Ticker
+        <!-- <button type="button" class="btn-close" aria-label="Close" (click)="showInvalidAlert = false"></button> -->
     </div>
 </div>
 
-<div *ngIf="stockInfo && !isLoading" class="container stock-details-layout">
+<div *ngIf="stockInfo && !isLoading" class="container stock-details-layout text-center">
     <div *ngIf="displayAddedToWatchlistAlert" class="alert alert-success alert-dismissible fade show" role="alert">
         <div class="d-flex align-items-center">
             <span>{{stockSymbol.toUpperCase()}} added to Watchlist.</span>
@@ -19,44 +29,46 @@
         {{ stockSymbol }} bought successfully.
         <button type="button" class="btn-close" (click)="displayBuyAlert = false"></button>
     </div>
-    <div class="row">
-        <!-- Company Info Column -->
-        <div class="col-12 col-sm-4">
-            <div class="company-info-column">
-                <p>{{stockInfo?.companyInfo?.ticker }}<i class="bi"
-                        [ngClass]="{'bi-star': !isPresentInWatchlist, 'bi-star-fill text-warning': isPresentInWatchlist}"
-                        (click)="toggleWatchlistEntry()"></i></p>
-                <p>{{ stockInfo?.companyInfo?.name }}</p>
-                <p>{{ stockInfo?.companyInfo?.exchange }}</p>
-                <div class="d-grid gap-2 d-sm-block">
-                    <button class="btn btn-success" type="button" (click)="openBuyModal()">Buy</button>
-                    <button class="btn btn-danger" type="button" *ngIf="isPresentInPortfolio" (click)="openSellModal()">Sell</button>
-                </div>
-            </div>
+    <div class="row g-0 justify-content-center" style="margin-top: 2%;">
+        <div class="col">
+            <p class="fs-2" style="margin-bottom: 0;">{{stockInfo?.companyInfo?.ticker }}<i class="bi ms-2 fs-3"
+                    [ngClass]="{'bi-star': !isPresentInWatchlist, 'bi-star-fill text-warning': isPresentInWatchlist}"
+                    (click)="toggleWatchlistEntry()"></i></p>
+            <p class="text-muted" style="font-size: 1.2rem;margin-bottom: 0;">{{ stockInfo?.companyInfo?.name }}</p>
+            <p style="font-size: 0.8rem;">{{ stockInfo?.companyInfo?.exchange }}</p>
+            <button class="btn btn-success me-2" type="button" (click)="openBuyModal()">Buy</button>
+            <button class="btn btn-danger" type="button" *ngIf="isPresentInPortfolio"
+                (click)="openSellModal()">Sell</button>
         </div>
 
         <!-- Logo Column -->
-        <div class="col-12 col-sm-4">
-            <div class="logo-column text-center">
-                <img [src]="stockInfo?.companyInfo?.logo" alt="Company Logo" class="img-fluid"
-                    style="width: 30%; height: 30%;">
-                <p [ngClass]="{'text-green': !isMarketOpen$, 'text-red': isMarketOpen$}">{{ marketStatusString }}</p>
-            </div>
+        <div class="col-4 align-items-center justify-content-center">
+            <!-- <div class="logo-column text-center  col-6 col-md-3"> -->
+            <img [src]="stockInfo?.companyInfo?.logo" alt="Company Logo"
+                class="img-fluid  col-8 col-sm-7 col-md-6 col-lg-5">
+            <!-- <p style=" font-size: 0.8rem; font-weight: bold; margin-top: 10px;"
+                [ngClass]="{'text-green': !isMarketOpen$, 'text-red': isMarketOpen$}">{{ marketStatusString }}</p> -->
+            <!-- </div> -->
         </div>
 
         <!-- Stock Price Column -->
-        <div class="col-12 col-sm-4">
-            <div class="stock-price-column">
-                <p [ngClass]="{'text-green': direction, 'text-red': !direction}">{{ stockInfo?.stockPriceDetails?.c }}
-                </p>
+        <div class=" col stock-price-column">
+            <p class="fs-2" style="margin-bottom: 0;" [ngClass]="{'text-green': direction, 'text-red': !direction}">{{
+                stockInfo?.stockPriceDetails?.c }}
+            </p>
 
-                <p [ngClass]="{'text-green': direction, 'text-red': !direction}">
-                    <i class="bi" [ngClass]="{'bi-caret-up-fill': direction, 'bi-caret-down-fill': !direction}"></i>
-                    {{ stockInfo?.stockPriceDetails?.d }} {{ changePercentage }}
-                </p>
-                <p>{{ dateTimestamp}}</p>
-            </div>
+            <p style="font-size: 1rem; margin-bottom: 0;" [ngClass]="{'text-green': direction, 'text-red': !direction}">
+                <i class="bi" [ngClass]="{'bi-caret-up-fill': direction, 'bi-caret-down-fill': !direction}"></i>
+                {{ stockInfo?.stockPriceDetails?.d }} {{ changePercentage }}
+            </p>
+            <p style="font-size: 0.7rem">{{ currentDateFormatted}}</p>
+
         </div>
+    </div>
+    <div class="row">
+        <p style=" font-size: 0.8rem; font-weight: bold; margin-top:2%"
+            [ngClass]="{'text-green': !isMarketOpen$, 'text-red': isMarketOpen$}"> {{ marketStatusString }}
+        </p>
     </div>
     <app-tabs *ngIf="showTabs" [stockInfo$]="stockInfo$" [isMarketOpen$]="isMarketOpen$" [stockSymbol]="stockSymbol"
         [searchStock]="searchStock.bind(this)"></app-tabs>

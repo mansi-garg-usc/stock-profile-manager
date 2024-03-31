@@ -9,27 +9,35 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-12 mb-2">
-                <p class="mb-0">Current Price: <strong>{{ currentPrice }}</strong></p>
+                <p class="mb-0">Current Price: {{ currentPrice }}</p>
             </div>
             <div class="col-12 mb-2">
-                <p class="mb-0">Money in Wallet: <strong>{{ oldWalletMoney | currency}}</strong></p>
+                <p class="mb-0">Money in Wallet: {{ oldWalletMoney | currency}}</p>
             </div>
-            <div class="col-12 mb-2">
-                <label for="quantity">Quantity:</label>
-                <input type="number" class="form-control" [(ngModel)]="quantity" (ngModelChange)="checkFunds()">
-                <div *ngIf=" notEnoughMoneyError" class="text-danger">
-                    Not enough money in wallet!
+            <div class="row mb-2 align-items-center">
+                <div class="col-auto">
+                    <label for="quantity" class="col-form-label">Quantity:</label>
                 </div>
-
+                <div class="col">
+                    <input type="number" id="quantity" class="form-control" [(ngModel)]="quantity" (ngModelChange)="checkFunds()">
+                </div>
+                <div class="col-12 mt-2">
+                    <div *ngIf="notEnoughMoneyError" class="text-danger">
+                        Not enough money in wallet!
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 <div class="modal-footer">
-
-    <div class="col-12">
-        <p class="mb-0">Total: <strong>{{ getTotal() }}</strong></p>
+    <div class="row w-100">
+        <div class="col text-start">
+            <p class="mb-0">Total: {{ getTotal() }}</p>
+        </div>
+        <div class="col text-end">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal" [disabled]="notEnoughMoneyError"
+                (click)="buyStock()">Buy</button>
+        </div>
     </div>
-    <button type="button" class="btn btn-success" data-bs-dismiss="modal" [disabled]="notEnoughMoneyError"
-        (click)="buyStock()">Buy</button>
 </div>

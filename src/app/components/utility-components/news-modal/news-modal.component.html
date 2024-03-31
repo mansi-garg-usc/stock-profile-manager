@@ -1,27 +1,32 @@
-<div #newsModal class="modal-dialog modal-dialog-centered modal-lg">
+<div #newsModal class="">
   <div class="modal-content">
     <div class="modal-header">
       <div>
-        <h2 class="modal-title" id="newsModalLabel">{{ source }}</h2>
-        <p class="text-muted">{{ datetime }}</p>
+        <h2 class="modal-title mt-2" id="newsModalLabel">{{ source }}</h2>
+        <p class="text-muted mt-0 mb-2" style="margin: 0;">{{ datetime }}</p>
       </div>
-      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" (click)="closeModal()"></button>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+        (click)="closeModal()"></button>
     </div>
     <div class="modal-body">
       <h4>{{ headline }}</h4>
-      <p>{{ summary }}</p>
-      <p class="details-text">For more details click <a href="{{ url }}" target="_blank">here</a>.</p>
+      <p style="margin: 0;" class="truncate-text">{{ summary }}</p>
+      <p class="details-text mt-0 mb-8">For more details click <a href="{{ url }}" target="_blank">here</a>.
+      </p>
       <div class="share-container">
         <p class="mb-0 me-3">Share</p>
         <div>
-          <a href="https://twitter.com/intent/tweet?text={{ headline }}&url={{ url }}" class="share-icon" target="_blank">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="Twitter Logo" style="width: 35px; height: auto;">
+          <a href="https://twitter.com/intent/tweet?text={{ headline }}&url={{ url }}" class="share-icon"
+            target="_blank">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" alt="Twitter Logo"
+              style="width: 35px; height: auto;">
           </a>
           <a href="https://www.facebook.com/sharer/sharer.php?u={{ url }}" target="_blank" class="share-icon me-2">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/1/1b/Facebook_icon.svg" alt="Facebook Logo" style="width: 35px; height: auto;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/1/1b/Facebook_icon.svg" alt="Facebook Logo"
+              style="width: 35px; height: auto;">
           </a>
         </div>
-      </div>    
+      </div>
     </div>
   </div>
 </div>

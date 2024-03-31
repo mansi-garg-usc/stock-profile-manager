@@ -33,16 +33,18 @@ export class ChartsComponent {
   updateFlag: boolean = false;
   oneToOneFlag: boolean = true;
   runOutsideAngular: boolean = false;
+  stockInfoLocal: any;
 
   ngOnInit() {
     this.stockInfo$.subscribe((stockInfo) => {
       if (stockInfo && stockInfo.chartsTabData) {
-        this.createChart(stockInfo.chartsTabData);
         // const ohlcData = this.getOHLC(stockInfo.stockPriceDetails);
         // const volumeData = this.getVolume(stockInfo.stockPriceDetails); // Assume you have a similar method for volume
         // this.createChart(ohlcData, volumeData);
+        this.stockInfoLocal = stockInfo;
       }
     });
+    this.createChart(this.stockInfoLocal.chartsTabData);
   }
 
   getOHLC(): any[] {
@@ -85,21 +87,61 @@ export class ChartsComponent {
         chartsData.results[i].c,
       ]);
     }
-    // console.log(ohlc)
+    console.log('ohlc', ohlc);
 
     // var maxVol = 0;
     for (let i = 0; i < chartsData.resultsCount; i++) {
       volume.push([chartsData.results[i].t, chartsData.results[i].v]);
     }
-    // console.log(volume)
+    console.log('volume', volume);
 
     this.chartOptions = {
       rangeSelector: {
-        selected: 2,
+        buttons: [
+          {
+            type: 'month',
+            count: 1,
+            text: '1m',
+            title: 'View 1 month',
+          },
+          {
+            type: 'month',
+            count: 6,
+            text: '6m',
+            title: 'View 6 months',
+          },
+          {
+            type: 'month',
+            count: 3,
+            text: '3m',
+            title: 'View 3 months',
+          },
+          {
+            type: 'ytd',
+            text: 'YTD',
+            title: 'View year to date',
+          },
+          {
+            type: 'year',
+            count: 1,
+            text: '1y',
+            title: 'View 1 year',
+          },
+          {
+            type: 'all',
+            text: 'All',
+            title: 'View all',
+          },
+        ],
+        selected: 0,
+        enabled: true,
       },
 
       title: {
         text: `${this.stockSymbol} Historical`,
+      },
+      xAxis: {
+        type: 'datetime',
       },
 
       subtitle: {
@@ -189,9 +231,12 @@ export class ChartsComponent {
           },
         },
       ],
-      // navigator: {
-      //   enabled: true // Explicitly enable navigator
-      // }
+      legend: {
+        enabled: false,
+      },
+      navigator: {
+        enabled: true, // Explicitly enable navigator
+      },
     };
   }
 }

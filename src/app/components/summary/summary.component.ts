@@ -1,14 +1,23 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { Observable, Subscription, of } from 'rxjs';
-import * as Highcharts from 'highcharts';
-import { StockSearchService } from '../../core/services/stock-search.service';
 import { Router } from '@angular/router';
+import { HighchartsChartModule } from 'highcharts-angular';
+import * as Highcharts from 'highcharts/highstock';
+import IndicatorsCore from 'highcharts/indicators/indicators';
+import HC_gantt from 'highcharts/modules/gantt';
+import HC_map from 'highcharts/modules/map';
+import HC_stock from 'highcharts/modules/stock';
+import { Observable, Subscription, of } from 'rxjs';
+import { StockSearchService } from '../../core/services/stock-search.service';
+IndicatorsCore(Highcharts);
+HC_gantt(Highcharts);
+HC_map(Highcharts);
+HC_stock(Highcharts);
 
 @Component({
   selector: 'app-summary',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HighchartsChartModule],
   templateUrl: './summary.component.html',
   styleUrl: './summary.component.css',
 })
@@ -20,40 +29,29 @@ export class SummaryComponent {
   stockInfo: any;
   chartData: any;
   peers: any;
+  chartOptions!: Highcharts.Options;
   private subscription: Subscription = new Subscription();
 
   // showSummaryChart() {
   //   if (this.isMarketOpen$) {
+  Highcharts: typeof Highcharts = Highcharts;
+
+  updateFlag = false;
   constructor(
     private stockSearchService: StockSearchService,
     private router: Router
   ) {}
 
   ngOnInit() {
+    console.log('Stock Info in summary component:', this.stockInfo);
     this.subscription.add(
       this.stockInfo$.subscribe((data) => {
-        // console.log('Stock Info in summary component:', data);
         this.stockInfo = data;
       })
     );
     this.peers = this.cleanupPeersArray(this.stockInfo?.companyPeers);
-    // this.stockSearchService.fetchPeersForNewTicker().subscribe({
-    //   next: (peers) => {
-    //     console.log('Peers:', peers);
-    //     let cleanedUpPeers = this.cleanupPeersArray(peers);
-    //     this.peers = cleanedUpPeers;
-    //   },
-    //   error: (error) => console.error('Error fetching peers:', error),
-    // });
+    this.showSummaryChart();
   }
-
-  // getCompanyPeers() {
-  //   this.subscription.add(
-  //     this.stockSearchService.fetchPeersForNewTicker().subscribe((peers) => {
-  //       console.log('Peers:', peers);
-  //     })
-  //   );
-  // }
 
   cleanupPeersArray(peers: string[]): string[] {
     const cleanedUpPeers: string[] = [];
@@ -77,10 +75,57 @@ export class SummaryComponent {
   }
 
   showSummaryChart() {
-    // Implement the logic to show the summary chart using the chartData
-    // For example, you can use the Highcharts library to render the chart
-    // Make sure to import the necessary modules and declare the required variables
-    // Refer to the Highcharts documentation for more details on how to create charts
+    var data = [];
+    console.log(this.stockInfo.summaryChart.resultsCount);
+    for (let i = 0; i < this.stockInfo.summaryChart.resultsCount; i++) {
+      data.push([
+        this.stockInfo.summaryChart.results[i].t,
+        this.stockInfo.summaryChart.results[i].c,
+      ]);
+    }
+    console.log(data);
+
+    this.chartOptions = {
+      chart: {
+        backgroundColor: '#f0f0f0', // Sets the background color to light grey
+      },
+      title: {
+        text: `${this.stockSymbol} Hourly Price Variation`,
+        align: 'center',
+      },
+      yAxis: {
+        title: {
+          text: '',
+        },
+        opposite: true,
+      },
+      xAxis: {
+        type: 'datetime',
+      },
+      plotOptions: {
+        series: {
+          label: {
+            connectorAllowed: false,
+          },
+          marker: {
+            enabled: false, // This disables the markers (the blue dots)
+          },
+          pointStart: 2010,
+        },
+      },
+      series: [
+        {
+          name: `${this.stockSymbol}`,
+          type: 'line',
+          data: data,
+          color: 'green',
+          // [43934, 48656, 65165, 81827, 112143, 142383, 171533, 165174, 155157, 161454, 154610]
+        },
+      ],
+      legend: {
+        enabled: false,
+      },
+    };
   }
 
   ngOnChanges() {
@@ -92,7 +137,6 @@ export class SummaryComponent {
     );
     this.peers = this.cleanupPeersArray(this.stockInfo?.companyPeers);
   }
-
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
