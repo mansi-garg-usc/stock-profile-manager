@@ -2,7 +2,7 @@
     <mat-tab label="Summary">
         <ng-template matTabContent>
             <app-summary [stockInfo$]="stockInfo$" [isMarketOpen$]="isMarketOpen$" [stockSymbol]="stockSymbol"
-                [searchStock]="searchStock.bind(this)"></app-summary>
+                [direction]="direction" [searchStock]="searchStock.bind(this)"></app-summary>
         </ng-template>
     </mat-tab>
     <mat-tab label="Top News">

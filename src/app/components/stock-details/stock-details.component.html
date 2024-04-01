@@ -67,10 +67,10 @@
     </div>
     <div class="row">
         <p style=" font-size: 0.8rem; font-weight: bold; margin-top:2%"
-            [ngClass]="{'text-green': !isMarketOpen$, 'text-red': isMarketOpen$}"> {{ marketStatusString }}
+            [ngClass]="{'text-green': direction, 'text-red': !direction}"> {{ marketStatusString }}
         </p>
     </div>
-    <app-tabs *ngIf="showTabs" [stockInfo$]="stockInfo$" [isMarketOpen$]="isMarketOpen$" [stockSymbol]="stockSymbol"
+    <app-tabs *ngIf="showTabs" [stockInfo$]="stockInfo$" [isMarketOpen$]="isMarketOpen$" [stockSymbol]="stockSymbol" [direction]="direction"
         [searchStock]="searchStock.bind(this)"></app-tabs>
 
 </div>

@@ -26,6 +26,7 @@ export class SummaryComponent {
   @Input() isMarketOpen$: Observable<boolean> = of(false);
   @Input() stockSymbol: string = '';
   @Input() searchStock: any;
+  @Input() direction: any;
   stockInfo: any;
   chartData: any;
   peers: any;
@@ -50,7 +51,16 @@ export class SummaryComponent {
       })
     );
     this.peers = this.cleanupPeersArray(this.stockInfo?.companyPeers);
+    this.checkChangePercentage(this.stockInfo?.stockPriceDetails?.dp);
     this.showSummaryChart();
+  }
+
+  checkChangePercentage(value: number) {
+    if (value > 0) {
+      this.direction = true;
+    } else {
+      this.direction = false;
+    }
   }
 
   cleanupPeersArray(peers: string[]): string[] {
@@ -118,7 +128,7 @@ export class SummaryComponent {
           name: `${this.stockSymbol}`,
           type: 'line',
           data: data,
-          color: 'green',
+          color: this.direction ? 'green' : 'red',
           // [43934, 48656, 65165, 81827, 112143, 142383, 171533, 165174, 155157, 161454, 154610]
         },
       ],

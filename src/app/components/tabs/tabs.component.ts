@@ -26,6 +26,7 @@ export class TabsComponent {
   @Input() isMarketOpen$: Observable<boolean> = of(false);
   @Input() stockSymbol: string = '';
   @Input() searchStock: any;
+  @Input() direction: any;
   private subscription: Subscription = new Subscription();
 
   ngOnInit() {
