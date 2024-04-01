@@ -15,7 +15,7 @@
         <table class="table table-center">
             <thead>
                 <tr>
-                    <th scope="col">{{stockSymbol}}</th>
+                    <th scope="col">{{(stockInfo$ | async)?.companyInfo?.name}}</th>
                     <th scope="col" scope="col">MSPR</th>
                     <th scope="col" scope="col">Change</th>
                 </tr>
