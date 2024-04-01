@@ -176,8 +176,16 @@ export class StockSearchComponent implements OnInit, OnDestroy {
             );
             let extractedResults = this.extractStockInfo(results);
             if (extractedResults && extractedResults.companyInfo !== null) {
-              this.stockInfo = extractedResults;
-              this.searchResultsDisplayed = true;
+              if (
+                typeof extractedResults.companyInfo === 'object' &&
+                Object.keys(extractedResults.companyInfo).length == 0
+              ) {
+                this.invalidEntry = true;
+                this.isLoaded = true;
+              } else {
+                this.stockInfo = extractedResults;
+                this.searchResultsDisplayed = true;
+              }
               // this.isAutocompleteLoading = false;
             } else {
               // this.invalidEntry = true;
