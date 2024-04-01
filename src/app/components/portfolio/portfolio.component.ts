@@ -183,10 +183,10 @@ export class PortfolioComponent implements OnInit {
     buyModalReference.componentInstance.currentPortfolioData = this.portfolio;
     buyModalReference.result.then((result) => {
       this.displayBuyAlert = true;
+      setTimeout(() => {
+        this.displayBuyAlert = false;
+      }, 4000);
       this.symbolBought = stocksymbol;
-      // setTimeout(() => {
-      //   this.displayBuyAlert = false;
-      // }, 3000);
       this.loadPortfolio();
     });
   }
@@ -201,10 +201,10 @@ export class PortfolioComponent implements OnInit {
     sellModalReference.componentInstance.currentPortfolioData = this.portfolio;
     sellModalReference.result.then((result) => {
       this.displaySellAlert = true;
+      setTimeout(() => {
+        this.displaySellAlert = false;
+      }, 4000);
       this.symbolSold = stocksymbol;
-      // setTimeout(() => {
-      //   this.displaySellAlert = false;
-      // }, 3000);
       this.loadPortfolio();
     });
   }

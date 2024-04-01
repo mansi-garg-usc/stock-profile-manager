@@ -227,7 +227,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
         // this.isPresentInWatchlist = false; // Update the flag since the item is now removed
         setTimeout(() => {
           this.displayBuyAlert = false;
-        }, 5000);
+        }, 4000);
         // this.displayBuyAlert = true;
         // this.canSellStock$.next(result);
         this.refreshPortfolioData(result);
@@ -254,7 +254,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
         // this.isPresentInWatchlist = false; // Update the flag since the item is now removed
         setTimeout(() => {
           this.displaySellAlert = false;
-        }, 5000);
+        }, 4000);
 
         this.refreshPortfolioData(result);
       },
@@ -514,7 +514,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
             // this.isPresentInWatchlist = false; // Update the flag since the item is now removed
             setTimeout(() => {
               this.displayRemovedFromWatchlistAlert = false;
-            }, 5000);
+            }, 4000);
             if (this.cachedWatchlistData !== null) {
               this.cachedWatchlistData = null;
               this.loadWatchlist();
@@ -535,7 +535,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
             this.displayAddedToWatchlistAlert = true;
             setTimeout(() => {
               this.displayAddedToWatchlistAlert = false;
-            }, 5000);
+            }, 4000);
 
             if (this.cachedWatchlistData !== null) {
               this.cachedWatchlistData = null;
