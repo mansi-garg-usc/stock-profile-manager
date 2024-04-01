@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
   MatAutocompleteModule,
@@ -9,6 +16,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { Location } from '@angular/common';
+import {
+  MatAutocomplete,
+  MatAutocompleteTrigger,
+} from '@angular/material/autocomplete';
 
 import {
   BehaviorSubject,
@@ -54,6 +65,7 @@ import { WatchlistService } from '../../core/services/watchlist-service';
 export class StockSearchComponent implements OnInit, OnDestroy {
   @Input() stockInfo: any;
   exposedCurrentStockSymbol: any;
+  @ViewChild('trigger') autocomplete!: MatAutocompleteTrigger;
 
   // route: ActivatedRoute = inject(ActivatedRoute);
   companyPeers: any;
@@ -260,6 +272,9 @@ export class StockSearchComponent implements OnInit, OnDestroy {
   searchStock(event?: any) {
     this.isLoaded = false;
     this.invalidEntry = false;
+    if (this.autocomplete) {
+      this.autocomplete.closePanel();
+    }
     let stock = '';
     // this.unsubscribeFromAutocomplete();
     // if (event instanceof MatAutocompleteSelectedEvent) {
@@ -331,13 +346,13 @@ export class StockSearchComponent implements OnInit, OnDestroy {
               //   this.isAutocompleteLoading = false;
               // }
               // this.filteredOptions = of([]);
-            // } else if (results.companyInfo === undefined) {
-            //   this.invalidEntry = true;
-            //   // this.isAutocompleteLoading = false;
-            //   this.isLoaded = true;
-            //   // this.searchResultsDisplayed = false;
-            //   // this.stockInfo = null;
-            //   // this.filteredOptions = of([]);
+              // } else if (results.companyInfo === undefined) {
+              //   this.invalidEntry = true;
+              //   // this.isAutocompleteLoading = false;
+              //   this.isLoaded = true;
+              //   // this.searchResultsDisplayed = false;
+              //   // this.stockInfo = null;
+              //   // this.filteredOptions = of([]);
             }
           },
           error: (error: any) => {

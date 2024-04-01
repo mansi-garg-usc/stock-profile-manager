@@ -6,8 +6,8 @@
             </div>
             <div class="input-group" matAutocompleteOrigin #origin="matAutocompleteOrigin">
                 <input type="text" class="form-control" placeholder="Enter stock ticker symbol" aria-label="Search"
-                    [formControl]="stockFormControl" [matAutocomplete]="auto" [matAutocompleteConnectedTo]="origin"
-                    (keydown.enter)="searchStock()" />
+                    [formControl]="stockFormControl" [matAutocomplete]="auto" #trigger="matAutocompleteTrigger"
+                    [matAutocompleteConnectedTo]="origin" (keydown.enter)="searchStock()" />
                 <div class="input-group-append">
                     <button class="btn btn-outline-secondary" type="button" (click)="searchStock()">
                         <i class="fa fa-search"></i>
