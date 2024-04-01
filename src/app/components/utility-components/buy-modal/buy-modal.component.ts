@@ -95,6 +95,10 @@ export class StockBuyModalComponent {
               console.log('Portfolio updated:', data);
               this.stockIndexInPortfolio = -1;
               this.stockPresentInPortfolio = false;
+              this.activeModal.close(data);
+
+              const totalCost = this.getTotal();
+              this.portfolioService.updateWalletMoney(-totalCost);
               //TODO: update wallet
             },
             error: (error) => {
@@ -114,17 +118,18 @@ export class StockBuyModalComponent {
               this.stockPresentInPortfolio = false;
               console.log('Portfolio updated:', data);
               //TODO: update wallet
+              this.activeModal.close(data);
+
+              const totalCost = this.getTotal();
+              this.portfolioService.updateWalletMoney(-totalCost);
             },
             error: (error) => {
               console.error('Error updating portfolio:', error);
             },
           });
       }
-      const totalCost = this.getTotal();
-      this.portfolioService.updateWalletMoney(-totalCost);
 
       // Close the modal after buying
-      this.activeModal.close();
     }
   }
 

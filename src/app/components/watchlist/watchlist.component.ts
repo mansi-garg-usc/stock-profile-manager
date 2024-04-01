@@ -3,6 +3,7 @@ import { WatchlistService } from '../../core/services/watchlist-service';
 import { CommonModule } from '@angular/common';
 import { BehaviorSubject } from 'rxjs';
 import { Router } from '@angular/router';
+import { StockSearchService } from '../../core/services/stock-search.service';
 
 @Component({
   selector: 'app-watchlist',
@@ -24,7 +25,8 @@ export class WatchlistComponent {
 
   constructor(
     private watchlistService: WatchlistService,
-    private router: Router
+    private router: Router,
+    private stockService: StockSearchService
   ) {}
 
   async ngOnInit() {
@@ -98,7 +100,8 @@ export class WatchlistComponent {
     this.isLoading = false;
   }
   searchStock(symbol: string): void {
-    this.router.navigate(['/search', symbol]);
+    this.stockService.setPreviousRouteData(null);
+    this.router.navigate(['/search', symbol.toUpperCase()]);
   }
   // removeFromWatchlist(symbol: string): void {
   //   // Call the service method to remove the symbol from the watchlist

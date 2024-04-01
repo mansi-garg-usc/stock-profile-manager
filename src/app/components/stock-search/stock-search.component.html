@@ -43,7 +43,8 @@
         <span class="sr-only">Loading...</span>
     </div>
 </div>
+
 <app-stock-details
     *ngIf="stockInfo && isLoaded && !invalidEntry && !(stockInfo.companyInfo== null && stockInfo.stockPriceDetails == null && stockInfo.companyPeers == null && stockInfo.chartsTabData == null && stockInfo.summaryChart == null)"
-    [stockInfo]="stockInfo" [stockSymbol]="selectedStockSymbol"
-    [searchStock]="searchStock.bind(this)"></app-stock-details>
+    [stockInfo]="stockInfo" [stockSymbol]="selectedStockSymbol" [searchStock]="searchStock.bind(this)">
+</app-stock-details>

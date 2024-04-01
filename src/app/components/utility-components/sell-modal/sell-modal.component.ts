@@ -95,6 +95,10 @@ export class StockSellModalComponent {
           this.currentPortfolioData = data;
           this.stockIndexInPortfolio = -1;
           this.stockPresentInPortfolio = false;
+          const totalRevenue = this.getTotal();
+          this.portfolioService.updateWalletMoney(totalRevenue);
+
+          this.activeModal.close(data);
         },
         error: (error) => {
           console.error('Error selling stock:', error);
@@ -126,17 +130,17 @@ export class StockSellModalComponent {
             this.stockIndexInPortfolio = -1;
             this.stockPresentInPortfolio = false;
             //TODO: update wallet
+
+            const totalRevenue = this.getTotal();
+            this.portfolioService.updateWalletMoney(totalRevenue);
+
+            this.activeModal.close(data);
           },
           error: (error) => {
             console.error('Error selling stock:', error);
           },
         });
     }
-
-    const totalRevenue = this.getTotal();
-    this.portfolioService.updateWalletMoney(totalRevenue);
-
-    this.activeModal.close();
   }
 
   getTotal(): number {

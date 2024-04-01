@@ -67,6 +67,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
   invalidEntry: boolean = false;
   isLoaded: boolean = true;
   previousRouteData: any = null;
+  // hideDetails = false;
 
   constructor(
     private stockSearchService: StockSearchService,
@@ -96,17 +97,25 @@ export class StockSearchComponent implements OnInit, OnDestroy {
         this.stockInfo = null;
         this.selectedStockSymbol = symbol;
         this.stockFormControl.setValue(symbol);
-        this.searchStock(symbol);
-      } else {
-        if (this.previousRouteData !== null) {
-          this.isLoaded = false;
-          this.stockInfo = this.previousRouteData.stockInfo;
-          this.selectedStockSymbol = this.previousRouteData.stocksymbol;
-          this.stockFormControl.setValue(this.previousRouteData.stocksymbol);
-          this.location.replaceState(
-            `/search/${this.previousRouteData.stocksymbol}`
-          );
-        }
+        this.searchStock(symbol.toUpperCase());
+      } else if (
+        symbol &&
+        symbol !== 'home' &&
+        this.previousRouteData == null
+      ) {
+        this.isLoaded = false;
+        this.stockInfo = null;
+        this.selectedStockSymbol = symbol;
+        this.stockFormControl.setValue(symbol);
+        this.searchStock(symbol.toUpperCase());
+      } else if (this.previousRouteData !== null) {
+        this.isLoaded = false;
+        this.stockInfo = this.previousRouteData.stockInfo;
+        this.selectedStockSymbol = this.previousRouteData.stocksymbol;
+        this.stockFormControl.setValue(this.previousRouteData.stocksymbol);
+        this.location.replaceState(
+          `/search/${this.previousRouteData.stocksymbol}`
+        );
       }
     });
 
@@ -144,7 +153,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
         .pipe(distinctUntilChanged())
         .subscribe({
           next: (symbol) => {
-            this.exposedCurrentStockSymbol = symbol;
+            this.exposedCurrentStockSymbol = symbol?.toUpperCase();
           },
         })
     );
@@ -268,11 +277,11 @@ export class StockSearchComponent implements OnInit, OnDestroy {
       }
       this.tickerUrlParam = this.route.snapshot.params['ticker'];
       console.log('tickerUrlParam', this.tickerUrlParam);
-      this.selectedStockSymbol = stock;
+      this.selectedStockSymbol = stock.toUpperCase();
       this.stockFormControl.setValue(stock, { emitEvent: false });
 
       this.stockSearchService
-        .searchStock(stock)
+        .searchStock(stock.toUpperCase())
         .pipe(distinctUntilChanged())
         .subscribe({
           next: (results) => {
@@ -340,6 +349,8 @@ export class StockSearchComponent implements OnInit, OnDestroy {
     this.stockSearchService.setPreviousRouteData();
     this.portfolioService.setPreviousPortfolioRouteData();
     this.watchlistService.setPreviousWatchlistRouteData();
+    this.stockInfo = null;
+    // this.hideDetails = true;
     // this.stockSearchService.setPreviousRouteData({
     //   stockInfo: this.stockInfo,
     //   stockFormControlValue: this.stockFormControl.value,

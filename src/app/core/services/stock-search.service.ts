@@ -225,26 +225,38 @@ export class StockSearchService {
     this.updateStockSymbol(stock);
 
     const companyInfo = this.http.get(
-      `${this.baseUrl}/company?symbol=${encodeURIComponent(stock)}`
+      `${this.baseUrl}/company?symbol=${encodeURIComponent(
+        stock
+      ).toUpperCase()}`
     );
     const stockPriceDetails = this.http.get(
-      `${this.baseUrl}/latestPrice?symbol=${encodeURIComponent(stock)}`
+      `${this.baseUrl}/latestPrice?symbol=${encodeURIComponent(
+        stock
+      ).toUpperCase()}`
     );
     const companyPeers = this.http.get(
-      `${this.baseUrl}/peers?symbol=${encodeURIComponent(stock)}`
+      `${this.baseUrl}/peers?symbol=${encodeURIComponent(stock).toUpperCase()}`
+    );
+    const summaryChart = this.http.get(
+      `${this.baseUrl}/highchartsHourly?symbol=${encodeURIComponent(
+        stock
+      ).toUpperCase()}&fromDate=${this.dateTwoDaysAgoValue}&toDate=${
+        this.todayValue
+      }`
+    );
+    console.log(
+      'summaryChart',
+      `${this.baseUrl}/highchartsHourly?symbol=${encodeURIComponent(
+        stock
+      ).toUpperCase()}&fromDate=${this.dateTwoDaysAgoValue}&toDate=${
+        this.todayValue
+      }`
     );
     // const summaryChart = this.http.get(
     //   `${this.baseUrl}/highchartsHourly?symbol=${encodeURIComponent(
     //     stock
-    //   ).toUpperCase()}&fromDate=${this.dateTwoDaysAgoValue}&toDate=${
-    //     this.todayValue
-    //   }`
+    //   ).toUpperCase()}&fromDate=2024-03-27&toDate=2024-03-29`
     // );
-    const summaryChart = this.http.get(
-      `${this.baseUrl}/highchartsHourly?symbol=${encodeURIComponent(
-        stock
-      ).toUpperCase()}&fromDate=2024-03-27&toDate=2024-03-29`
-    );
     console.log('today', this.todayValue);
     console.log('two days ago', this.dateTwoDaysAgoValue);
     console.log('past year', this.pastYearValue);
@@ -562,15 +574,19 @@ export class StockSearchService {
     return this.previousRouteData;
   }
 
-  setPreviousRouteData() {
-    if (this.currentStockSymbol.value !== null) {
-      let previousRouteData = {
-        stocksymbol: this.currentStockSymbol.value,
-        searchResult: this.searchResult.value,
-      };
-      this.previousRouteData = previousRouteData;
+  setPreviousRouteData(data?: any) {
+    if (data) {
+      this.previousRouteData = data;
     } else {
-      this.previousRouteData = null;
+      if (this.currentStockSymbol.value !== null) {
+        let previousRouteData = {
+          stocksymbol: this.currentStockSymbol.value,
+          searchResult: this.searchResult.value,
+        };
+        this.previousRouteData = previousRouteData;
+      } else {
+        this.previousRouteData = null;
+      }
     }
   }
 

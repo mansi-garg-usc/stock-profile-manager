@@ -49,7 +49,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
   marketStatusString: string = '';
   isPresentInWatchlist: boolean = false;
   isPresentInPortfolio: boolean = false;
-  indexInWatchlist: number = -1;
+  indexInPortfolio: number = -1;
   displayBuyAlert = false;
   displaySellAlert = false;
   portfolioData: any = [];
@@ -194,9 +194,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
       this.dateTimestamp = this.formatDate(
         this.stockInfo?.stockPriceDetails?.t
       );
-      this.marketStatusString = this.isMarketOpen.value
-        ? 'Market is Open'
-        : `Market closed on ${this.dateTimestamp}`;
+
       this.showTabs = true;
       this.stockInfoSubject.next(this.stockInfo);
       this.stockSearchService.startPeriodicUpdate(this.stockSymbol);
@@ -220,14 +218,19 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
     buyModalReference.componentInstance.stockPresentInPortfolio =
       this.isPresentInPortfolio;
     buyModalReference.componentInstance.stockIndexInPortfolio =
-      this.indexInWatchlist;
+      this.indexInPortfolio;
     buyModalReference.componentInstance.currentPortfolioData =
       this.portfolioData;
     buyModalReference.result.then(
       (result) => {
         this.displayBuyAlert = true;
-        this.canSellStock$.next(result);
-        this.refreshPortfolioData();
+        // this.isPresentInWatchlist = false; // Update the flag since the item is now removed
+        setTimeout(() => {
+          this.displayBuyAlert = false;
+        }, 5000);
+        // this.displayBuyAlert = true;
+        // this.canSellStock$.next(result);
+        this.refreshPortfolioData(result);
       },
       (reason) => {}
     );
@@ -248,35 +251,43 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
     sellModalReference.result.then(
       (result) => {
         this.displaySellAlert = true;
-        this.refreshPortfolioData();
+        // this.isPresentInWatchlist = false; // Update the flag since the item is now removed
+        setTimeout(() => {
+          this.displaySellAlert = false;
+        }, 5000);
+
+        this.refreshPortfolioData(result);
       },
       (reason) => {}
     );
   }
 
-  refreshPortfolioData() {
+  refreshPortfolioData(data?: any) {
     this.cachedPortfolioData = [];
-    this.portfolioService.getPortfolio().subscribe({
-      next: (data) => {
-        this.portfolioData = data;
-        if (this.portfolioData.length > 0) {
-          this.portfolioData.some((entry: any) => {
-            if (entry?.stocksymbol === this.stockSymbol.toUpperCase()) {
-              this.isPresentInPortfolio = true;
-              this.indexInWatchlist = this.portfolioData.indexOf(entry);
-            } else {
-              this.isPresentInPortfolio = false;
-            }
-          });
+    // this.portfolioService.getPortfolio().subscribe({
+    //   next: (data) => {
+    //     this.portfolioData = data;
+    this.portfolioData = data;
+    if (this.portfolioData?.length > 0) {
+      this.portfolioData.some((entry: any) => {
+        if (entry?.stocksymbol === this.stockSymbol.toUpperCase()) {
+          this.isPresentInPortfolio = true;
+          this.indexInPortfolio = this.portfolioData.indexOf(entry);
         } else {
           this.isPresentInPortfolio = false;
-          this.indexInWatchlist = -1;
+          this.indexInPortfolio = -1;
         }
-      },
-      error: (error) => {
-        console.error('Error refreshing portfolio data:', error);
-      },
-    });
+      });
+    }
+    // } else {
+    //   this.isPresentInPortfolio = false;
+    //   this.indexInPortfolio = -1;
+    // }
+    //   },
+    //   error: (error) => {
+    //     console.error('Error refreshing portfolio data:', error);
+    //   },
+    // });
   }
 
   get stockInfo$() {
@@ -302,7 +313,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
       ) {
         this.setMarketStatus();
         this.stockSymbol = changes['stockSymbol'].currentValue.toUpperCase();
-        this.updateWatchlistStatus();
+        // this.updateWatchlistStatus();
         this.isLoading = false;
       }
       if (this.stockInfo?.hasOwnProperty('companyInfo')) {
@@ -366,6 +377,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
       this.watchlistSubscription.unsubscribe();
     }
     this.stockSearchService.stopPeriodicUpdate();
+    // this.stockInfo = undefined;
   }
 
   checkChangePercentage(value: number) {
@@ -467,24 +479,38 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
       (hours < marketCloseHour ||
         (hours === marketCloseHour && minutes < marketCloseMinute));
 
+    let marketStatusDate = date.getDate().toString().padStart(2, '0');
+    let marketStatusMonth = (date.getMonth() + 1).toString().padStart(2, '0');
+    let marketStatusYear = date.getFullYear().toString();
+    let marketStatusHour = date.getHours().toString().padStart(2, '0');
+    let marketStatusMinute = date.getMinutes().toString().padStart(2, '0');
+    let marketStatusSecond = date.getSeconds().toString().padStart(2, '0');
+    let marketStatusStringTime = `${marketStatusYear}-${marketStatusMonth}-${marketStatusDate} ${marketStatusHour}:${marketStatusMinute}:${marketStatusSecond}`;
+
+    // this.marketStatusString = this.isMarketOpen.value
+    //   ? 'Market is Open'
+    //   : `Market closed on ${this.dateTimestamp}`;
+
     if (!isDayInPast && isWeekday && isTimeWithinMarketHours) {
       this.isMarketOpen.next(true);
+      this.marketStatusString = 'Market is Open';
       return true;
     } else {
       this.isMarketOpen.next(false);
+      this.marketStatusString = `Market closed on ${marketStatusStringTime}`;
       return false;
     }
   }
 
-  setWatchlistEntry(): void {
-    const watchlistJSON = localStorage.getItem('watchlist');
-    const watchlist = watchlistJSON ? JSON.parse(watchlistJSON) : [];
-    this.isPresentInWatchlist = watchlist?.includes(
-      `${this.stockSymbol.toUpperCase()}`
-    )
-      ? true
-      : false;
-  }
+  // setWatchlistEntry(): void {
+  //   const watchlistJSON = localStorage.getItem('watchlist');
+  //   const watchlist = watchlistJSON ? JSON.parse(watchlistJSON) : [];
+  //   this.isPresentInWatchlist = watchlist?.includes(
+  //     `${this.stockSymbol.toUpperCase()}`
+  //   )
+  //     ? true
+  //     : false;
+  // }
 
   toggleWatchlistEntry(): void {
     if (this.isPresentInWatchlist) {
@@ -493,12 +519,16 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
         .removeFromWatchlist(this.stockSymbol.toUpperCase())
         .subscribe({
           next: () => {
-            this.isPresentInWatchlist = false; // Update the flag since the item is now removed
             this.displayRemovedFromWatchlistAlert = true;
+            // this.isPresentInWatchlist = false; // Update the flag since the item is now removed
+            setTimeout(() => {
+              this.displayRemovedFromWatchlistAlert = false;
+            }, 5000);
             if (this.cachedWatchlistData !== null) {
               this.cachedWatchlistData = null;
               this.loadWatchlist();
             }
+            // this.displayRemovedFromWatchlistAlert = true;
             // Optionally, refresh the watchlist or perform other UI updates here
           },
           error: (error) =>
@@ -510,13 +540,17 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
         .addToWatchlist(this.stockSymbol.toUpperCase())
         .subscribe({
           next: () => {
-            this.isPresentInWatchlist = true; // Update the flag since the item is now added
+            // this.isPresentInWatchlist = true; // Update the flag since the item is now added
             this.displayAddedToWatchlistAlert = true;
+            setTimeout(() => {
+              this.displayAddedToWatchlistAlert = false;
+            }, 5000);
 
             if (this.cachedWatchlistData !== null) {
               this.cachedWatchlistData = null;
               this.loadWatchlist();
             }
+            // this.displayRemovedFromWatchlistAlert = false;
             // Optionally, refresh the watchlist or perform other UI updates here
           },
           error: (error) => console.error('Error adding to watchlist:', error),

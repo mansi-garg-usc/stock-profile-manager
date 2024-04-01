@@ -21,6 +21,12 @@
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
+    <div *ngIf="displayRemovedFromWatchlistAlert" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <span>{{stockSymbol.toUpperCase()}} removed from Watchlist.</span>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     <div *ngIf="displaySellAlert" class="alert alert-danger alert-dismissible fade show" role="alert">
         {{ stockSymbol }} sold successfully.
         <button type="button" class="btn-close" (click)="displaySellAlert = false"></button>
@@ -31,7 +37,8 @@
     </div>
     <div class="row g-0 justify-content-center" style="margin-top: 2%;">
         <div class="col">
-            <p class="fs-2" style="margin-bottom: 0;">{{stockInfo?.companyInfo?.ticker }}<i style="cursor: pointer;" class="bi ms-2 fs-3"
+            <p class="fs-2" style="margin-bottom: 0;">{{stockInfo?.companyInfo?.ticker }}<i style="cursor: pointer;"
+                    class="bi ms-2 fs-3"
                     [ngClass]="{'bi-star': !isPresentInWatchlist, 'bi-star-fill text-warning': isPresentInWatchlist}"
                     (click)="toggleWatchlistEntry()"></i></p>
             <p class="text-muted" style="font-size: 1.2rem;margin-bottom: 0;">{{ stockInfo?.companyInfo?.name }}</p>
@@ -70,7 +77,7 @@
             [ngClass]="{'text-green': direction, 'text-red': !direction}"> {{ marketStatusString }}
         </p>
     </div>
-    <app-tabs *ngIf="showTabs" [stockInfo$]="stockInfo$" [isMarketOpen$]="isMarketOpen$" [stockSymbol]="stockSymbol" [direction]="direction"
-        [searchStock]="searchStock.bind(this)"></app-tabs>
+    <app-tabs *ngIf="showTabs" [stockInfo$]="stockInfo$" [isMarketOpen$]="isMarketOpen$" [stockSymbol]="stockSymbol"
+        [direction]="direction" [searchStock]="searchStock.bind(this)"></app-tabs>
 
 </div>

@@ -169,7 +169,8 @@ export class PortfolioComponent implements OnInit {
     // this.isLoading = false;
   }
   searchStock(symbol: string): void {
-    this.router.navigate(['/search', symbol]);
+    this.stockSearchService.setPreviousRouteData(null);
+    this.router.navigate(['/search', symbol.toUpperCase()]);
   }
 
   openBuyModal(stocksymbol: any, currentPrice: any): void {
