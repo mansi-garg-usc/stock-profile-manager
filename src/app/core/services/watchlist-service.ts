@@ -22,6 +22,8 @@ export class WatchlistService {
   private watchlistDisplayData = new BehaviorSubject<any>([]);
   exposedWatchlistDisplayData = this.watchlistDisplayData.asObservable();
 
+  previousWatchlistRouteData: any = null;
+
   constructor(private http: HttpClient) {
     this.fetchWatchlist().subscribe();
   }
@@ -59,45 +61,6 @@ export class WatchlistService {
         })
       );
   }
-
-  // getWatchlistData(): Observable<WatchlistEntry[]> {
-  //   return this.watchlistEntries.pipe(
-  //     switchMap((symbols) => {
-  //       if (!symbols.length) {
-  //         return of([]);
-  //       }
-  //       const requests = symbols.map((symbol: any) => {
-  //         const companyInfo$ = this.http.get<CompanyInfoResponse>(
-  //           `${this.baseUrl}/company`,
-  //           { params: { symbol } }
-  //         );
-  //         const stockPriceDetails$ = this.http.get<StockPriceDetailsResponse>(
-  //           `${this.baseUrl}/latestPrice`,
-  //           { params: { symbol } }
-  //         );
-
-  //         return forkJoin({
-  //           companyInfo: companyInfo$,
-  //           stockPriceDetails: stockPriceDetails$,
-  //         });
-  //       });
-  //       return forkJoin(requests).pipe(
-  //         map((resultsArray: any) =>
-  //           resultsArray.map(
-  //             (result: any) =>
-  //               ({
-  //                 symbol: result.companyInfo.ticker,
-  //                 companyName: result.companyInfo.name,
-  //                 stockPrice: result.stockPriceDetails.c,
-  //                 changePercentage: result.stockPriceDetails.dp,
-  //                 changeAmount: result.stockPriceDetails.d,
-  //               } as WatchlistEntry)
-  //           )
-  //         )
-  //       );
-  //     })
-  //   );
-  // }
 
   getWatchlistData(): Observable<any> {
     console.log('inside getWatchlistData in service');
@@ -148,39 +111,26 @@ export class WatchlistService {
     );
   }
 
-  // addToWatchlist(ticker: string): Observable<any> {
-  //   return this.http
-  //     .post(`${this.baseUrl}/addwatchlist`, { symbol: ticker })
-  //     .pipe(
-  //       switchMap(() => this.getWatchlist()) // After adding, fetch the latest watchlist
-  //     );
-  // }
-
-  // removeFromWatchlist(ticker: string): void {
-  //   this.http
-  //     .post(`${this.baseUrl}/removewatchlist`, { symbol: ticker })
-  //     .pipe(
-  //       switchMap(() => this.getWatchlist()) // After removing, fetch the latest watchlist
-  //     )
-  //     .subscribe((updatedWatchlist) => {
-  //       this.watchlistEntries.next(updatedWatchlist); // Update the BehaviorSubject with the new watchlist
-  //     });
-  // }
-
   removeFromWatchlist(symbol: string): Observable<any> {
     // Make a backend call to remove the symbol from the watchlist
-    return this.http.get<any[]>(`${this.baseUrl}/removewatchlist`, { params: { symbol: symbol } }).pipe(
-      tap(() => {
-        // Update the watchlistEntries BehaviorSubject after successful removal
-        const updatedWatchlist = this.watchlistEntries.getValue().filter((item: any) => item.symbol !== symbol);
-        this.watchlistEntries.next(updatedWatchlist);
-      }),
-      switchMap(() => this.getWatchlistData()), // Fetch the updated watchlist data
-      catchError((error) => {
-        console.error('Error removing from watchlist:', error);
-        return throwError(() => new Error('Error removing from watchlist'));
+    return this.http
+      .get<any[]>(`${this.baseUrl}/removewatchlist`, {
+        params: { symbol: symbol },
       })
-    );
+      .pipe(
+        tap(() => {
+          // Update the watchlistEntries BehaviorSubject after successful removal
+          const updatedWatchlist = this.watchlistEntries
+            .getValue()
+            .filter((item: any) => item.symbol !== symbol);
+          this.watchlistEntries.next(updatedWatchlist);
+        }),
+        switchMap(() => this.getWatchlistData()), // Fetch the updated watchlist data
+        catchError((error) => {
+          console.error('Error removing from watchlist:', error);
+          return throwError(() => new Error('Error removing from watchlist'));
+        })
+      );
   }
 
   updateWatchlistEntries(entry: WatchlistEntry | null) {
@@ -193,11 +143,29 @@ export class WatchlistService {
     this.watchlistEntries.next(watchlist);
   }
 
-  //   clearSearchResults() {
-  //     this.searchResult?.next(null);
-  //     this.newsResult?.next(null);
-  //     this.companyPeers?.next(null);
-  //   }
+  getPreviousWatchlistRouteData(): any {
+    return this.previousWatchlistRouteData;
+  }
+
+  setPreviousWatchlistRouteData(): void {
+    if (
+      this.watchlistEntries.value !== null &&
+      this.watchlistDisplayData.value !== null
+    ) {
+      let previousWatchlistRouteData = {
+        watchlistentries: this.watchlistEntries.value,
+        watchlistDisplayData: this.watchlistDisplayData.value,
+      };
+      this.previousWatchlistRouteData = previousWatchlistRouteData;
+    } else {
+      this.previousWatchlistRouteData = null;
+    }
+  }
+
+  clearWatchlistData() {
+    this.watchlistEntries.next([]);
+    this.watchlistDisplayData.next([]);
+  }
 }
 
 interface WatchlistEntry {
@@ -211,14 +179,12 @@ interface WatchlistEntry {
 interface CompanyInfoResponse {
   symbol: string;
   name: string;
-  // Add other company info properties as needed
 }
 
 interface StockPriceDetailsResponse {
-  c: number; // Assuming 'c' represents current price
-  dp: number; // Assuming 'dp' represents change percentage
-  d: number; // Assuming 'd' represents change amount
-  // Add other stock price details as needed
+  c: number;
+  dp: number;
+  d: number;
 }
 
 interface WatchlistDataResponse {

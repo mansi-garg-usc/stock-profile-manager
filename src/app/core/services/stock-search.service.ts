@@ -17,6 +17,7 @@ import {
 import { BehaviorSubject } from 'rxjs';
 import { charts } from 'highcharts';
 import { NavigationEnd, Router } from '@angular/router';
+import { CacheService } from './cache.service';
 
 @Injectable({
   providedIn: 'root',
@@ -24,8 +25,8 @@ import { NavigationEnd, Router } from '@angular/router';
 export class StockSearchService {
   private lastCallTime: number = Date.now();
   private callDelay: number = 15000;
-  private previousRoute: string | null = null;
-  private previousRouteData: any = null;
+  // private previousRoute: string | null = null;
+  // private previousRouteData: any = null;
   today = new Date();
   todayValue: string = '';
   dateToday = new Date();
@@ -38,6 +39,7 @@ export class StockSearchService {
     this.dateToday.setDate(this.dateToday.getDay() - 2)
   );
   dateTwoDaysAgoValue: string = '';
+  previousRouteData: any = null;
 
   private updateInterval?: number;
 
@@ -68,32 +70,36 @@ export class StockSearchService {
   private companyInfoGlobal: any;
   private ongoingSearches = new Map<string, Observable<any>>();
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private cacheService: CacheService
+  ) {
     this.computeDates();
-    this.trackNavigationEnd();
+    // this.trackNavigationEnd();
   }
 
-  private trackNavigationEnd() {
-    this.router.events
-      .pipe(
-        filter(
-          (event): event is NavigationEnd => event instanceof NavigationEnd
-        ),
-        tap((event: NavigationEnd) => {
-          // Now 'event' is strictly typed as NavigationEnd, and 'urlAfterRedirects' is accessible
-          this.previousRoute = event.urlAfterRedirects || event.url;
-        })
-      )
-      .subscribe();
-  }
+  // private trackNavigationEnd() {
+  //   this.router.events
+  //     .pipe(
+  //       filter(
+  //         (event): event is NavigationEnd => event instanceof NavigationEnd
+  //       ),
+  //       tap((event: NavigationEnd) => {
+  //         // Now 'event' is strictly typed as NavigationEnd, and 'urlAfterRedirects' is accessible
+  //         this.previousRoute = event.urlAfterRedirects || event.url;
+  //       })
+  //     )
+  //     .subscribe();
+  // }
 
-  setPreviousRouteData(data: any): void {
-    this.previousRouteData = data;
-  }
+  // setPreviousRouteData(data: any): void {
+  //   this.previousRouteData = data;
+  // }
 
-  getPreviousRouteData(): any {
-    return this.previousRouteData;
-  }
+  // getPreviousRouteData(): any {
+  //   return this.previousRouteData;
+  // }
 
   private baseUrl = 'http://localhost:8000/api';
 
@@ -152,6 +158,10 @@ export class StockSearchService {
   }
 
   searchStock(stock: string): Observable<any> {
+    const cachedData = this.cacheService.getCache(stock);
+    if (cachedData) {
+      return of(cachedData);
+    }
     // Check if there's an ongoing search for the given stock symbol
     console.log('search logic called for stock:', stock);
     if (this.ongoingSearches.has(stock)) {
@@ -210,6 +220,7 @@ export class StockSearchService {
   }
 
   searchLogic(stock: string) {
+    this.cacheService.clearAllCache();
     console.log('call made to server for stock:', stock);
     this.updateStockSymbol(stock);
 
@@ -254,7 +265,7 @@ export class StockSearchService {
     result.subscribe({
       next: (response: any) => {
         this.companyInfoGlobal = response.companyInfo;
-        this.updateSearchResults({
+        this.updateSearchResults(stock, {
           companyInfo: response.companyInfo,
           stockPriceDetails: response.stockPriceDetails,
           companyPeers: response.companyPeers,
@@ -267,7 +278,7 @@ export class StockSearchService {
       },
       error: (error) => {
         console.error('Error fetching stock data:', error);
-        this.updateSearchResults({
+        this.updateSearchResults(stock, {
           companyInfo: null,
           stockPriceDetails: null,
           companyPeers: null,
@@ -282,8 +293,9 @@ export class StockSearchService {
     return result;
   }
 
-  updateSearchResults(results: any) {
+  updateSearchResults(stock: string, results: any) {
     this.searchResult?.next(results);
+    this.cacheService.setCache(stock, this.searchResult.value);
   }
 
   fetchPeersForNewTicker(): Observable<any> {
@@ -546,6 +558,22 @@ export class StockSearchService {
     );
   }
 
+  getPreviousRouteData(): any {
+    return this.previousRouteData;
+  }
+
+  setPreviousRouteData() {
+    if (this.currentStockSymbol.value !== null) {
+      let previousRouteData = {
+        stocksymbol: this.currentStockSymbol.value,
+        searchResult: this.searchResult.value,
+      };
+      this.previousRouteData = previousRouteData;
+    } else {
+      this.previousRouteData = null;
+    }
+  }
+
   clearSearchResults() {
     this.searchResult?.next(null);
     this.newsResult?.next(null);
@@ -554,5 +582,7 @@ export class StockSearchService {
     this.companyEarnings?.next(null);
     this.companyTrends?.next(null);
     this.searchResult?.next(null);
+    this.cacheService.clearAllCache();
+    this.currentStockSymbol?.next(null);
   }
 }

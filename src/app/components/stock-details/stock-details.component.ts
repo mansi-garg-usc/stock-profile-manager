@@ -62,12 +62,8 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
   currentDateFormatted = this.formatTodayDate(this.currentDate);
   invalidEntry: boolean = false;
   displayDetails = false;
-
-  // isPresentInWatchlist: boolean = localStorage
-  //   .getItem('watchlist')
-  //   ?.includes(`${this.stockSymbol.toUpperCase()}`)
-  //   ? true
-  //   : false;
+  cachedWatchlistData: any = null;
+  cachedPortfolioData: any = null;
 
   public showTabs: boolean = false;
   private subscription: Subscription = new Subscription();
@@ -96,93 +92,30 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   }
 
-  // async ngOnInit() {
-  //   this.invalidEntry = false;
-  //   console.log('Current date:', this.currentDateFormatted);
-  //   console.log('calling load watchlist for:', this.stockSymbol);
-  //   this.isLoading = true;
-  //   await this.sleep(500); // TODO
-
-  //   this.loadWatchlist();
-  //   this.subscription = this.stockSearchService.exposedSearchResult.subscribe({
-  //     next: (results) => {
-  //       if (results && results.length > 0) {
-  //         this.handleSearchResults(results);
-  //       }
-  //     },
-  //     error: (error) =>
-  //       console.error('Error while fetching stock details:', error),
-  //   });
-
-  //   this.subscription.add(
-  //     this.activatedRoute.params
-  //       .pipe(
-  //         switchMap((params) => {
-  //           // this.isLoading = true;
-  //           const ticker = params['ticker'];
-  //           if (ticker) {
-  //             this.displayAddedToWatchlistAlert = false;
-  //             this.displayRemovedFromWatchlistAlert = false;
-  //             // this.isLoading = true;
-  //             return this.stockSearchService.searchStock(ticker); // Ensure searchStock returns an Observable
-  //           }
-  //           return of({});
-  //         })
-  //         // finalize(() => (this.isLoading = false))
-  //       )
-  //       .subscribe((results) => {
-  //         if (results && Object.keys(results).length > 0) {
-  //           this.handleSearchResults(results);
-  //           this.portfolioService.getPortfolio().subscribe({
-  //             next: (data) => {
-  //               this.portfolioData = data;
-  //               this.portfolioData.some((entry: any) => {
-  //                 if (entry?.stocksymbol === this.stockSymbol.toUpperCase()) {
-  //                   this.isPresentInPortfolio = true;
-  //                   this.indexInWatchlist = this.portfolioData.indexOf(entry);
-  //                 } else {
-  //                   this.isPresentInPortfolio = false;
-  //                 }
-  //               });
-  //             },
-  //             error: (error) => {
-  //               this.invalidEntry = true;
-  //               console.error(
-  //                 'Error fetching portfolio data in stock details:',
-  //                 error
-  //               );
-  //             },
-  //           });
-  //         }
-  //       })
-  //   );
-
-  //   this.watchlistSubscription =
-  //     this.watchlistService.exposedWatchlistEntries.subscribe(
-  //       (watchlistEntries) => {
-  //         console.log('Watchlist entries:', watchlistEntries);
-  //         // Check if the current stock symbol is present in the watchlist
-  //         this.isPresentInWatchlist = watchlistEntries.some((entry: any) => {
-  //           entry?.symbol === this.stockSymbol.toUpperCase();
-  //           this.indexInWatchlist = watchlistEntries.indexOf(entry);
-  //         });
-  //       }
-  //     );
-
-  //   // this.isLoading = false;
-  //   // this.setWatchlistEntry();
-  // }
-
   async ngOnInit() {
+    let cachedData = this.stockSearchService.getPreviousRouteData();
+    let cachedWatchlist = this.watchlistService.getPreviousWatchlistRouteData();
+    // let cachedPortfolio = null;
+    // let cachedPortfolioData = null;
+    // let cachedPortfolio = this.portfolioService.getPreviousPortfolioRouteData();
+    // console.log(
+    //   'mansi cached portfolio in details component:',
+    //   cachedPortfolio
+    // );
+    let cachedTicker = cachedData !== null ? cachedData.stocksymbol : null;
+    this.cachedWatchlistData =
+      cachedWatchlist !== null ? cachedWatchlist : null;
+    // this.cachedPortfolioData =
+    //   cachedPortfolio !== null ? cachedPortfolio.portfoliodata : null;
     this.invalidEntry = false;
-    console.log('Current date:', this.currentDateFormatted);
-    console.log('calling load watchlist for:', this.stockSymbol);
     this.isLoading = true;
 
-    await this.sleep(500); // Simulated loading time
+    // await this.sleep(500); // Simulated loading time
 
     // Load the watchlist initially
     this.loadWatchlist();
+
+    this.loadPortfolio();
 
     // Subscription to handle route parameters and fetch stock details
     this.subscription.add(
@@ -195,14 +128,16 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
           }),
           switchMap((params) => {
             const ticker = params['ticker'];
-            if (ticker !== this.stockSymbol) {
+            if (ticker !== this.stockSymbol && cachedTicker === null) {
               return this.stockSearchService.searchStock(ticker);
-            }
-            return of(null); // Return null or an appropriate value if no ticker is provided
+            } else if (cachedData !== null) {
+              return of(cachedData);
+            } else {
+              return of(null);
+            } // Return null or an appropriate value if no ticker is provided
           }),
           tap((results) => {
             // Handle the stock search results
-            console.log('Stock search results in stock details:', results);
             if (
               results &&
               Object.keys(results).length > 0 &&
@@ -213,6 +148,11 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
               // this.stockInfo = null;
               // this.invalidEntry = true; // Handle the case where no results are found or an invalid ticker is provided
             }
+          }), // Fetch portfolio data after handling stock search results
+          catchError((error) => {
+            console.error('Error during data fetching thisss:', error);
+            // this.invalidEntry = true;
+            return of(null); // Handle errors and continue the observable chain
           }),
           switchMap(() => this.portfolioService.getPortfolio()), // Fetch portfolio data after handling stock search results
           catchError((error) => {
@@ -237,7 +177,6 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
     this.watchlistSubscription =
       this.watchlistService.exposedWatchlistEntries.subscribe(
         (watchlistEntries) => {
-          console.log('Watchlist entries:', watchlistEntries);
           this.isPresentInWatchlist = watchlistEntries.some(
             (entry: any) => entry?.symbol === this.stockSymbol.toUpperCase()
           );
@@ -246,12 +185,9 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
   }
 
   handleSearchResults(results: any) {
-    console.log('handle search results called in details component:');
-
     if (results && results.length > 0 && this.stockSymbol !== '') {
       this.isLoading = false;
       this.currentDateFormatted = this.formatTodayDate(new Date());
-      console.log('Current date:', this.currentDateFormatted);
       this.stockInfo = results;
       this.setMarketStatus();
       this.checkChangePercentage(this.stockInfo?.stockPriceDetails?.dp);
@@ -265,12 +201,12 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
       this.stockInfoSubject.next(this.stockInfo);
       this.stockSearchService.startPeriodicUpdate(this.stockSymbol);
       this.loadWatchlist();
+      this.loadPortfolio();
       // this.isLoading = false;
     } else {
       this.isLoading = false;
       // this.stockInfoSubject.next(null);
       // this.invalidEntry = true;
-      console.log('here');
     }
   }
 
@@ -287,18 +223,15 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
       this.indexInWatchlist;
     buyModalReference.componentInstance.currentPortfolioData =
       this.portfolioData;
-    console.log('Current portfolio data:', this.portfolioData);
     buyModalReference.result.then(
       (result) => {
         this.displayBuyAlert = true;
         this.canSellStock$.next(result);
-        console.log('Modal closed with:', result);
         this.refreshPortfolioData();
       },
-      (reason) => {
-        console.log('Modal dismissed with:', reason);
-      }
+      (reason) => {}
     );
+
     //TODO: Add the current portfolio data
   }
 
@@ -317,17 +250,15 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
         this.displaySellAlert = true;
         this.refreshPortfolioData();
       },
-      (reason) => {
-        console.log('Modal dismissed with:', reason);
-      }
+      (reason) => {}
     );
   }
 
   refreshPortfolioData() {
+    this.cachedPortfolioData = [];
     this.portfolioService.getPortfolio().subscribe({
       next: (data) => {
         this.portfolioData = data;
-        console.log('Portfolio data refreshed:', this.portfolioData);
         if (this.portfolioData.length > 0) {
           this.portfolioData.some((entry: any) => {
             if (entry?.stocksymbol === this.stockSymbol.toUpperCase()) {
@@ -405,7 +336,6 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
         this.isMarketOpen?.value
       ) {
         this.stockSearchService.startPeriodicUpdate(this.stockSymbol);
-        console.log('Periodic update started for symbol:', this.stockSymbol);
       }
     }
     // this.isLoading = false;
@@ -422,7 +352,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
       this.watchlistService.exposedWatchlistEntries.subscribe(
         (watchlistEntries) => {
           this.isPresentInWatchlist = watchlistEntries.some(
-            (entry: any) => entry.symbol === this.stockSymbol
+            (entry: any) => entry.symbol === this.stockSymbol.toUpperCase()
           );
         }
       );
@@ -481,19 +411,6 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
 
     return formattedDate;
   }
-
-  // setMarketStatus() {
-  //   this.time = this.stockInfo?.stockPriceDetails?.t * 1000;
-  //   let currentTime = new Date().getTime();
-  //   let timeDiff = currentTime - this.time;
-  //   let fiveMinutes = 5 * 60 * 1000;
-  //   if (timeDiff < fiveMinutes) {
-  //     this.isMarketOpen?.next(true);
-  //   } else {
-  //     this.isMarketOpen?.next(false);
-  //   }
-  //   //console.log('Is market open:', this.isMarketOpen?.value);
-  // }
 
   setMarketStatus(): boolean {
     // Ensure stockInfo and stockPriceDetails are defined and contain a valid timestamp
@@ -568,24 +485,6 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
       ? true
       : false;
   }
-  // working
-  // toggleWatchlistEntry(): void {
-  //   if (!this.isPresentInWatchlist) {
-  //     // If the stock symbol is not in the watchlist, add it
-  //     this.watchlistService
-  //       .addToWatchlist(this.stockSymbol.toUpperCase())
-  //       .subscribe({
-  //         next: () => {
-  //           console.log(`${this.stockSymbol} added to watchlist`);
-  //           this.isPresentInWatchlist = true; // Update the flag since the item is now added
-  //         },
-  //         error: (error) => console.error('Error adding to watchlist:', error),
-  //       });
-  //   } else {
-  //     // If the stock symbol is already in the watchlist, log a message
-  //     console.log(`${this.stockSymbol} is already in the watchlist`);
-  //   }
-  // }
 
   toggleWatchlistEntry(): void {
     if (this.isPresentInWatchlist) {
@@ -594,9 +493,12 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
         .removeFromWatchlist(this.stockSymbol.toUpperCase())
         .subscribe({
           next: () => {
-            console.log(`${this.stockSymbol} removed from watchlist`);
             this.isPresentInWatchlist = false; // Update the flag since the item is now removed
             this.displayRemovedFromWatchlistAlert = true;
+            if (this.cachedWatchlistData !== null) {
+              this.cachedWatchlistData = null;
+              this.loadWatchlist();
+            }
             // Optionally, refresh the watchlist or perform other UI updates here
           },
           error: (error) =>
@@ -608,9 +510,13 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
         .addToWatchlist(this.stockSymbol.toUpperCase())
         .subscribe({
           next: () => {
-            console.log(`${this.stockSymbol} added to watchlist`);
             this.isPresentInWatchlist = true; // Update the flag since the item is now added
             this.displayAddedToWatchlistAlert = true;
+
+            if (this.cachedWatchlistData !== null) {
+              this.cachedWatchlistData = null;
+              this.loadWatchlist();
+            }
             // Optionally, refresh the watchlist or perform other UI updates here
           },
           error: (error) => console.error('Error adding to watchlist:', error),
@@ -618,80 +524,50 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  // loadWatchlist(): any {
-  //   this.watchlistService.fetchWatchlist().subscribe({
-  //     next: (watchlist) => {
-  //       this.localWatchlist = watchlist;
-  //       this.localWatchlist.find(
-  //         (item) => item === this.stockSymbol.toUpperCase()
-  //       )
-  //         ? (this.isPresentInWatchlist = true)
-  //         : (this.isPresentInWatchlist = false);
-  //       console.log(
-  //         'Watchlist from load watchlis in details component:',
-  //         this.localWatchlist
-  //       );
-  //       console.log('Is present in watchlist:', this.isPresentInWatchlist);
-  //     },
-  //     error: (error: any) => {
-  //       // Handle any errors here
-  //       console.error('Error loading watchlist:', error);
-  //     },
-  //   });
-  // }
-
   loadWatchlist(): any {
-    this.watchlistService.fetchWatchlist().subscribe({
-      next: (watchlist) => {
-        // The watchlist might contain more than just symbols. If it does, you should map it to just the symbols.
-        this.localWatchlist = watchlist.map((entry) => entry.symbol); // Assuming each entry has a 'symbol' property
-        this.isPresentInWatchlist = this.localWatchlist.includes(
+    if (this.cachedWatchlistData === null) {
+      this.watchlistService.fetchWatchlist().subscribe({
+        next: (watchlist) => {
+          // The watchlist might contain more than just symbols. If it does, you should map it to just the symbols.
+          this.localWatchlist = watchlist.map((entry) => entry.symbol); // Assuming each entry has a 'symbol' property
+          this.isPresentInWatchlist = this.localWatchlist.includes(
+            this.stockSymbol.toUpperCase()
+          );
+        },
+        error: (error: any) => {
+          console.error('Error loading watchlist:', error);
+        },
+      });
+    } else {
+      this.localWatchlist = this.cachedWatchlistData.watchlistentries;
+      this.isPresentInWatchlist =
+        this.cachedWatchlistData.watchlistentries.includes(
           this.stockSymbol.toUpperCase()
         );
-        console.log(
-          'Watchlist from load watchlist in details component:',
-          this.localWatchlist
+    }
+  }
+
+  loadPortfolio(): any {
+    this.portfolioService.getPortfolio().subscribe({
+      next: (portfolioData) => {
+        this.portfolioData = portfolioData;
+        this.isPresentInPortfolio = portfolioData.some(
+          (entry: any) => entry?.stocksymbol === this.stockSymbol.toUpperCase()
         );
-        console.log('Is present in watchlist:', this.isPresentInWatchlist);
+        console.log(
+          'Portfolio data from load portfolio in details component:',
+          this.portfolioData
+        );
+        console.log(
+          'Is present in portfolio in details component:',
+          this.isPresentInPortfolio
+        );
       },
       error: (error: any) => {
-        console.error('Error loading watchlist:', error);
+        console.error('Error loading portfolio:', error);
       },
     });
   }
-  // addToWatchlist(ticker: string): void {
-  //   // Call the addToWatchlist method of the WatchlistService
-  //   this.watchlistService.getWatchlist().subscribe({
-  //     next: (watchlist) => {
-  //       if (!watchlist.includes(ticker.toUpperCase())) {
-  //         this.localWatchlist.push(ticker.toUpperCase());
-  //         this.watchlistService
-  //           .addToWatchlist(this.stockSymbol.toUpperCase())
-  //           .subscribe({
-  //             next: (updatedWatchlist) => {
-  //               console.log(
-  //                 `Added ${this.stockSymbol.toUpperCase()} to watchlist and updated watchlist is ${updatedWatchlist}`
-  //               );
-  //               //this.isPresentInWatchlist = true; // Update the flag since the item is now added
-  //             },
-  //             error: (error: any) => {
-  //               // Handle any errors here
-  //               console.error('Error adding to watchlist:', error);
-  //               // Optionally update isPresentInWatchlist based on error handling logic
-  //             },
-  //           });
-  //         console.log(`Added ${ticker} to watchlist`);
-  //         //this.isPresentInWatchlist = true;
-  //       }
-  //     },
-  //     error: (error: any) => {
-  //       // Handle any errors here
-  //       console.error('Error adding to watchlist:', error);
-  //       // Optionally update isPresentInWatchlist based on error handling logic
-  //     },
-  //   });
-  // }
-
   removeFromWatchlist(ticker: string): void {
     // let watchlist = this.loadWatchlist();
     // if (watchlist.includes(ticker.toUpperCase())) {

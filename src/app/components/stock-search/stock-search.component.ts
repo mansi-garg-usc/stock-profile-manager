@@ -8,6 +8,8 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
+import { Location } from '@angular/common';
+
 import {
   BehaviorSubject,
   Observable,
@@ -29,6 +31,9 @@ import { StockDetailsComponent } from '../stock-details/stock-details.component'
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ChangeDetectorRef } from '@angular/core';
+import { CacheService } from '../../core/services/cache.service';
+import { PortfolioService } from '../../core/services/portfolio.service';
+import { WatchlistService } from '../../core/services/watchlist-service';
 
 @Component({
   selector: 'app-stock-search',
@@ -56,32 +61,52 @@ export class StockSearchComponent implements OnInit, OnDestroy {
   stockFormControl = new FormControl();
   filteredOptions: Observable<any> = of([]);
   private subscription: Subscription = new Subscription();
-  watchlist = localStorage.setItem('watchlist', JSON.stringify([]));
   searchResultsDisplayed: boolean = false;
   isAutocompleteLoading: boolean = false;
   tickerUrlParam: any = '';
   invalidEntry: boolean = false;
   isLoaded: boolean = true;
+  previousRouteData: any = null;
 
   constructor(
     private stockSearchService: StockSearchService,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private route: ActivatedRoute = inject(ActivatedRoute)
+    private route: ActivatedRoute = inject(ActivatedRoute),
+    private cacheService: CacheService,
+    private watchlistService: WatchlistService,
+    private portfolioService: PortfolioService,
+    private location: Location
   ) {}
 
   ngOnInit() {
     // this.subscribeToAutocomplete();
     console.log('selectedStockSymbol', this.selectedStockSymbol);
+    this.previousRouteData = this.stockSearchService.getPreviousRouteData();
 
     this.route.params.subscribe((params) => {
       const symbol = params['ticker'];
-      if (symbol && symbol !== 'home') {
+      if (
+        symbol &&
+        symbol !== 'home' &&
+        this.previousRouteData !== null &&
+        symbol !== this.previousRouteData.stocksymbol
+      ) {
         this.isLoaded = false;
         this.stockInfo = null;
         this.selectedStockSymbol = symbol;
         this.stockFormControl.setValue(symbol);
         this.searchStock(symbol);
+      } else {
+        if (this.previousRouteData !== null) {
+          this.isLoaded = false;
+          this.stockInfo = this.previousRouteData.stockInfo;
+          this.selectedStockSymbol = this.previousRouteData.stocksymbol;
+          this.stockFormControl.setValue(this.previousRouteData.stocksymbol);
+          this.location.replaceState(
+            `/search/${this.previousRouteData.stocksymbol}`
+          );
+        }
       }
     });
 
@@ -179,7 +204,12 @@ export class StockSearchComponent implements OnInit, OnDestroy {
   private extractStockInfo(results: any): any {
     // Method to extract and return stock info from search results
     // Adjust according to your data structure
-    if (this.selectedStockSymbol !== '') {
+
+    if (
+      this.selectedStockSymbol !== '' ||
+      (this.previousRouteData !== null &&
+        this.previousRouteData.stocksymbol !== null)
+    ) {
       return results?.hasOwnProperty('companyInfo')
         ? {
             companyInfo: results.companyInfo,
@@ -227,8 +257,11 @@ export class StockSearchComponent implements OnInit, OnDestroy {
       stock = this.stockFormControl.value;
     }
     if (!stock) {
+      // if(this.exposedCurrentStockSymbol === '' || this.exposedCurrentStockSymbol === null) {}
+      // else {
       this.invalidEntry = true;
       this.isLoaded = true;
+      // }
     } else {
       if (stock !== this.selectedStockSymbol) {
         this.router.navigate(['/search', stock]);
@@ -257,7 +290,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
                   results &&
                   results?.hasOwnProperty('companyInfo') &&
                   results.companyPeers,
-                  chartsTabData:
+                chartsTabData:
                   results &&
                   results?.hasOwnProperty('companyInfo') &&
                   results.chartsTabData,
@@ -304,19 +337,23 @@ export class StockSearchComponent implements OnInit, OnDestroy {
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
-    this.stockSearchService.setPreviousRouteData({
-      stockInfo: this.stockInfo,
-      stockFormControlValue: this.stockFormControl.value,
-    });
+    this.stockSearchService.setPreviousRouteData();
+    this.portfolioService.setPreviousPortfolioRouteData();
+    this.watchlistService.setPreviousWatchlistRouteData();
+    // this.stockSearchService.setPreviousRouteData({
+    //   stockInfo: this.stockInfo,
+    //   stockFormControlValue: this.stockFormControl.value,
+    // });
     // sessionStorage.setItem('stateSave', this.stockInfo);
   }
 
   clearSearchResults() {
+    this.previousRouteData = null;
     this.stockFormControl.setValue('');
     this.stockSearchService.clearSearchResults();
     this.searchResultsDisplayed = false;
     this.stockInfo = null;
-    this.stockSearchService.setPreviousRouteData(null);
+    // this.stockSearchService.setPreviousRouteData(null);
     // this.cdr.detectChanges();
     this.router.navigate(['/search/home']);
     this.invalidEntry = false;
