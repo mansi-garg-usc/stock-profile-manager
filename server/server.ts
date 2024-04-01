@@ -1,3 +1,22 @@
+class ApiKeyRotator {
+  private apiKeys: string[];
+  private currentIndex: number = 0;
+
+  constructor(apiKeys: string[]) {
+    if (apiKeys.length === 0) {
+      throw new Error('ApiKeyRotator requires at least one API key');
+    }
+    this.apiKeys = apiKeys;
+  }
+
+  // Get the next API key in the rotation
+  getNextKey(): string {
+    const key = this.apiKeys[this.currentIndex];
+    this.currentIndex = (this.currentIndex + 1) % this.apiKeys.length;
+    return key;
+  }
+}
+
 import cors from 'cors';
 import express, { Request, Response } from 'express';
 import path from 'path';
@@ -54,6 +73,12 @@ function formatDate(dateToBeFormatted: Date) {
 }
 
 async function startServer() {
+  const apiKeys = [
+    'fP1uPp6FRhYiEw1L7u9Z_XcgMoQDkuFc',
+    'PWkaPl2Z5G3CNFVY9qr7sivNGZyEKEAY',
+    'AnjpX_saVqazmlRPU7qYBGJCSJuuwNb8',
+  ]; // Replace these with your actual API keys
+  const apiKeyRotator = new ApiKeyRotator(apiKeys);
   try {
     // Connect to MongoDB
     await client.connect();
@@ -129,7 +154,8 @@ async function startServer() {
       let fromDate = req.query['fromDate'];
       let toDate = req.query['toDate'];
       let tickerSymbol = String(req.query['symbol']).toUpperCase();
-      const url = `https://api.polygon.io/v2/aggs/ticker/${tickerSymbol}/range/1/day/${fromDate}/${toDate}?adjusted=true&sort=asc&apiKey=${polygon_api_key}`;
+      let api_key = apiKeyRotator.getNextKey();
+      const url = `https://api.polygon.io/v2/aggs/ticker/${tickerSymbol}/range/1/day/${fromDate}/${toDate}?adjusted=true&sort=asc&apiKey=${api_key}`;
 
       console.log('Requesting URL:', url); // Log the URL being requested
 
@@ -153,8 +179,10 @@ async function startServer() {
       const fromDate = req.query['fromDate'];
       const toDate = req.query['toDate'];
       const highchartsAPI = polygon_api_key;
+
+      let api_key = apiKeyRotator.getNextKey();
       try {
-        const url = `https://api.polygon.io/v2/aggs/ticker/${stockTicker}/range/1/hour/${fromDate}/${toDate}?adjusted=true&sort=asc&apiKey=${highchartsAPI}`;
+        const url = `https://api.polygon.io/v2/aggs/ticker/${stockTicker}/range/1/hour/${fromDate}/${toDate}?adjusted=true&sort=asc&apiKey=${api_key}`;
         const polygonResponse = await axios.get(url);
         console.log('Stock Ticker:', stockTicker);
         console.log('polygonkey:', highchartsAPI);
@@ -292,8 +320,10 @@ async function startServer() {
       const apiKey = polygon_api_key;
       const fromDate = calculateFromDate();
       const toDate = getCurrentDate();
+      let api_key = apiKeyRotator.getNextKey();
       try {
-        const url = `https://api.polygon.io/v2/aggs/ticker/${tickerSymbol}/range/1/day/${fromDate}/${toDate}?adjusted=true&sort=asc&apiKey=${apiKey}`;
+        console.log();
+        const url = `https://api.polygon.io/v2/aggs/ticker/${tickerSymbol}/range/1/day/${fromDate}/${toDate}?adjusted=true&sort=asc&apiKey=${api_key}`;
         const polygonResponse = await axios.get(url);
         res.json(polygonResponse.data);
       } catch (error) {

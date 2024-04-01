@@ -11,6 +11,8 @@ import {
   switchMap,
   filter,
   timer,
+  finalize,
+  shareReplay,
 } from 'rxjs';
 import { BehaviorSubject } from 'rxjs';
 import { charts } from 'highcharts';
@@ -64,6 +66,7 @@ export class StockSearchService {
   exposedSummaryChart = this.summaryChart.asObservable();
 
   private companyInfoGlobal: any;
+  private ongoingSearches = new Map<string, Observable<any>>();
 
   constructor(private http: HttpClient, private router: Router) {
     this.computeDates();
@@ -92,7 +95,7 @@ export class StockSearchService {
     return this.previousRouteData;
   }
 
-  private baseUrl = '/api';
+  private baseUrl = 'http://localhost:8000/api';
 
   formatDate(dateToBeFormatted: Date) {
     const year = dateToBeFormatted.getFullYear();
@@ -149,26 +152,65 @@ export class StockSearchService {
   }
 
   searchStock(stock: string): Observable<any> {
-    const currentTime = Date.now();
-    const timeSinceLastCall = currentTime - this.lastCallTime;
-
-    if (timeSinceLastCall < this.callDelay) {
-      const delayTime = this.callDelay - timeSinceLastCall;
-
-      return timer(delayTime).pipe(
-        switchMap(() => this.searchLogic(stock)),
-        catchError((error) => {
-          console.error('Error fetching stock data:', error);
-          return throwError(() => new Error('Error in searchStock'));
-        })
+    // Check if there's an ongoing search for the given stock symbol
+    console.log('search logic called for stock:', stock);
+    if (this.ongoingSearches.has(stock)) {
+      // If there's an ongoing search, return the observable associated with it
+      return (
+        this.ongoingSearches.get(stock) ??
+        throwError(() => new Error('Unexpected error: Observable is undefined'))
       );
     } else {
-      // Perform the search immediately if enough time has passed since the last call
-      return this.searchLogic(stock);
+      // If there's no ongoing search, calculate if we need to delay the request
+      const currentTime = Date.now();
+      const timeSinceLastCall = currentTime - this.lastCallTime;
+
+      let searchObservable: Observable<any>;
+
+      if (timeSinceLastCall < this.callDelay) {
+        // Calculate the necessary delay
+        const delayTime = this.callDelay - timeSinceLastCall;
+
+        // Create an observable with the delay and subsequent search logic
+        searchObservable = timer(delayTime).pipe(
+          switchMap(() => this.searchLogic(stock))
+        );
+      } else {
+        // If enough time has passed, perform the search immediately
+        searchObservable = this.searchLogic(stock);
+      }
+
+      // Apply common logic for error handling and finalization
+      searchObservable = searchObservable.pipe(
+        tap(() => {
+          this.lastCallTime = Date.now(); // Update last call time on success
+          //this.ongoingSearches.delete(stock); // Remove from the map once the data is received
+          //this.ongoingSearches.set(stock, searchObservable);
+        }),
+        catchError((error) => {
+          console.error('Error fetching stock data:', error);
+          // if (error.response && error.response.status === 429) {
+          //   // Retry with exponential backoff
+          //   return timer(5000).pipe(switchMap(() => this.searchLogic(stock)));
+          // }
+          return throwError(() => new Error('Error in searchStock', error));
+        }),
+        shareReplay(1),
+        finalize(() => {
+          this.ongoingSearches.delete(stock); // Ensure cleanup in finalize block
+        })
+      );
+
+      // Store the observable in the map to indicate an ongoing search
+      this.ongoingSearches.set(stock, searchObservable);
+
+      // Return the observable for the HTTP request
+      return searchObservable;
     }
   }
 
   searchLogic(stock: string) {
+    console.log('call made to server for stock:', stock);
     this.updateStockSymbol(stock);
 
     const companyInfo = this.http.get(
@@ -371,35 +413,39 @@ export class StockSearchService {
           console.error('Stock symbol is not set');
           return throwError(() => new Error('Stock symbol is not set'));
         } else {
-          // return this.http
-          //   .get<any[]>(
-          //     `${this.baseUrl}/highchartsHourly?symbol=${encodeURIComponent(
-          //       stock
-          //     )}&fromDate=${this.dateTwoDaysAgoValue}&toDate=${this.todayValue}`
-          //   )
-          return this.http
-            .get<any[]>(
-              `${this.baseUrl}/highchartsHourly?symbol=${encodeURIComponent(
-                stock
-              )}&fromDate=2024-03-28&toDate=2024-03-30`
-            )
-            .pipe(
-              tap((response) => {
-                const currentSearchResult = this.searchResult.value;
-                const updatedSearchResult = {
-                  ...currentSearchResult,
-                  summaryChart: response, // Update the stockPriceDetails with the new response
-                };
-                this.searchResult.next(updatedSearchResult);
-              }),
-              catchError((error) => {
-                console.error('Error fetching summary chart:', error);
-                this.searchResult.next({ chartsTabData: [] });
-                return throwError(
-                  () => new Error('Error fetching summary chart')
-                );
-              })
-            );
+          return (
+            this.http
+              .get<any[]>(
+                `${this.baseUrl}/highchartsHourly?symbol=${encodeURIComponent(
+                  stock
+                )}&fromDate=${this.dateTwoDaysAgoValue}&toDate=${
+                  this.todayValue
+                }`
+              )
+              // return this.http
+              //   .get<any[]>(
+              //     `${this.baseUrl}/highchartsHourly?symbol=${encodeURIComponent(
+              //       stock
+              //     )}&fromDate=2024-03-28&toDate=2024-03-30`
+              //   )
+              .pipe(
+                tap((response) => {
+                  const currentSearchResult = this.searchResult.value;
+                  const updatedSearchResult = {
+                    ...currentSearchResult,
+                    summaryChart: response, // Update the stockPriceDetails with the new response
+                  };
+                  this.searchResult.next(updatedSearchResult);
+                }),
+                catchError((error) => {
+                  console.error('Error fetching summary chart:', error);
+                  this.searchResult.next({ chartsTabData: [] });
+                  return throwError(
+                    () => new Error('Error fetching summary chart')
+                  );
+                })
+              )
+          );
         }
       })
     );

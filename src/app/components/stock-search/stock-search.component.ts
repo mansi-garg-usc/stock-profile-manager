@@ -87,13 +87,20 @@ export class StockSearchComponent implements OnInit, OnDestroy {
 
     this.filteredOptions = this.stockFormControl.valueChanges.pipe(
       startWith(''),
-      debounceTime(300),
+      debounceTime(100),
+      tap((value) => console.log('After debounceTime:', value)),
       distinctUntilChanged(),
       filter((term) => term && term.length > 1),
+      tap((term) => console.log('After filter:', term)),
       switchMap((term) => {
         this.isAutocompleteLoading = true;
-        if (term !== this.exposedCurrentStockSymbol) {
+        if (
+          term !== this.exposedCurrentStockSymbol &&
+          term !== 'home' &&
+          term !== 'HOME'
+        ) {
           return this.stockSearchService.searchAutocomplete(term).pipe(
+            tap((data) => console.log('Data from service:', data)),
             catchError(() => of([])), // Handle errors gracefully by returning an empty array
             map((options) => {
               this.isAutocompleteLoading = false;
@@ -129,9 +136,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
               results
             );
             let extractedResults = this.extractStockInfo(results);
-            if (
-              (extractedResults && extractedResults.companyInfo !== null)
-            ) {
+            if (extractedResults && extractedResults.companyInfo !== null) {
               this.stockInfo = extractedResults;
               this.searchResultsDisplayed = true;
               // this.isAutocompleteLoading = false;
@@ -252,10 +257,10 @@ export class StockSearchComponent implements OnInit, OnDestroy {
                   results &&
                   results?.hasOwnProperty('companyInfo') &&
                   results.companyPeers,
-                chartsData:
+                  chartsTabData:
                   results &&
                   results?.hasOwnProperty('companyInfo') &&
-                  results.chartsData,
+                  results.chartsTabData,
                 summaryChart:
                   results &&
                   results?.hasOwnProperty('companyInfo') &&

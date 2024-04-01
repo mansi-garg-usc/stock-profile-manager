@@ -31,7 +31,7 @@
     </div>
     <div class="row g-0 justify-content-center" style="margin-top: 2%;">
         <div class="col">
-            <p class="fs-2" style="margin-bottom: 0;">{{stockInfo?.companyInfo?.ticker }}<i class="bi ms-2 fs-3"
+            <p class="fs-2" style="margin-bottom: 0;">{{stockInfo?.companyInfo?.ticker }}<i style="cursor: pointer;" class="bi ms-2 fs-3"
                     [ngClass]="{'bi-star': !isPresentInWatchlist, 'bi-star-fill text-warning': isPresentInWatchlist}"
                     (click)="toggleWatchlistEntry()"></i></p>
             <p class="text-muted" style="font-size: 1.2rem;margin-bottom: 0;">{{ stockInfo?.companyInfo?.name }}</p>

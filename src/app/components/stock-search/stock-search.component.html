@@ -44,6 +44,6 @@
     </div>
 </div>
 <app-stock-details
-    *ngIf="stockInfo && !invalidEntry && !(stockInfo.companyInfo== null && stockInfo.stockPriceDetails == null && stockInfo.companyPeers == null && stockInfo.chartsData == null && stockInfo.summaryChart == null)"
+    *ngIf="stockInfo && !invalidEntry && !(stockInfo.companyInfo== null && stockInfo.stockPriceDetails == null && stockInfo.companyPeers == null && stockInfo.chartsTabData == null && stockInfo.summaryChart == null)"
     [stockInfo]="stockInfo" [stockSymbol]="selectedStockSymbol"
     [searchStock]="searchStock.bind(this)"></app-stock-details>
