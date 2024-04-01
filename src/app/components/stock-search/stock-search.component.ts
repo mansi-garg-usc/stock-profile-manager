@@ -85,6 +85,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
     console.log('selectedStockSymbol', this.selectedStockSymbol);
     this.previousRouteData = this.stockSearchService.getPreviousRouteData();
 
+    this.isLoaded = false;
     this.route.params.subscribe((params) => {
       const symbol = params['ticker'];
       if (
@@ -109,7 +110,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
         this.stockFormControl.setValue(symbol);
         this.searchStock(symbol.toUpperCase());
       } else if (this.previousRouteData !== null) {
-        this.isLoaded = false;
+        this.isLoaded = true;
         this.stockInfo = this.previousRouteData.stockInfo;
         this.selectedStockSymbol = this.previousRouteData.stocksymbol;
         this.stockFormControl.setValue(this.previousRouteData.stocksymbol);
@@ -128,6 +129,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
       tap((term) => console.log('After filter:', term)),
       switchMap((term) => {
         this.isAutocompleteLoading = true;
+        // this.isLoaded = true
         if (
           term !== this.exposedCurrentStockSymbol &&
           term !== 'home' &&
@@ -154,6 +156,9 @@ export class StockSearchComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (symbol) => {
             this.exposedCurrentStockSymbol = symbol?.toUpperCase();
+            if (symbol == null) {
+              this.isLoaded = true;
+            }
           },
         })
     );
@@ -164,7 +169,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (results) => {
             // Update stockInfo based on new search results
-            this.isLoaded = true;
+            // this.isLoaded = true;
             console.log(
               'exposed search result ke subscriptions se data in stock search component:',
               results
@@ -177,14 +182,14 @@ export class StockSearchComponent implements OnInit, OnDestroy {
             } else {
               // this.invalidEntry = true;
               // this.isAutocompleteLoading = false;
-              this.isLoaded = true;
+              // this.isLoaded = true;
             }
             console.log('Stock Info updated from new search:', this.stockInfo);
           },
           error: (error) => {
             console.error('Error fetching stock data:', error);
             this.invalidEntry = true;
-            this.isLoaded = true;
+            // this.isLoaded = true;
           },
         })
     );

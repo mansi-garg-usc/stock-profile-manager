@@ -35,13 +35,13 @@
                                     </div>
                                     <div class="col">
                                         <h5 class="card-title"
-                                            [ngClass]="{'text-success': watchlistRecord.changeAmount >= 0, 'text-danger': watchlistRecord.changeAmount < 0}">
+                                            [ngClass]="{'text-success': watchlistRecord.changeAmount > 0, 'text-danger': watchlistRecord.changeAmount < 0}">
                                             {{ watchlistRecord.stockPrice }}</h5>
                                         <p [ngClass]="{'text-green': direction, 'text-red': !direction}"
-                                            [ngClass]="{'text-success': watchlistRecord.changeAmount >= 0, 'text-danger': watchlistRecord.changeAmount < 0}">
+                                            [ngClass]="{'text-success': watchlistRecord.changeAmount > 0, 'text-danger': watchlistRecord.changeAmount < 0}">
 
                                             <i class="bi"
-                                                [ngClass]="{'bi-caret-up-fill': direction, 'bi-caret-down-fill': !direction}"></i>
+                                                [ngClass]="{'bi-caret-up-fill': watchlistRecord.changeAmount > 0, 'bi-caret-down-fill': watchlistRecord.changeAmount < 0}"></i>
                                             {{ watchlistRecord.changeAmount }} ({{
                                             (watchlistRecord.changePercentage).toFixed(2)
                                             }}%)
