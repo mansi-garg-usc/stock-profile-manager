@@ -311,13 +311,12 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
         changes['stockSymbol'].currentValue !==
           changes['stockSymbol'].previousValue
       ) {
-        this.setMarketStatus();
+        // this.setMarketStatus();
         this.stockSymbol = changes['stockSymbol'].currentValue.toUpperCase();
         // this.updateWatchlistStatus();
         this.isLoading = false;
       }
       if (this.stockInfo?.hasOwnProperty('companyInfo')) {
-        // this.setMarketStatus();
         this.checkChangePercentage(this.stockInfo?.stockPriceDetails?.dp);
         this.dateTimestamp = this.convertEpochToPST(
           this.stockInfo?.stockPriceDetails?.t
@@ -326,15 +325,16 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
           this.stockInfo?.stockPriceDetails?.t * 1000
         );
 
-        const year = dateForMarketStatus.getFullYear().toString();
-        const month = (dateForMarketStatus.getMonth() + 1)
-          .toString()
-          .padStart(2, '0');
-        const day = dateForMarketStatus.getDate().toString().padStart(2, '0');
+        this.setMarketStatus();
+        // const year = dateForMarketStatus.getFullYear().toString();
+        // const month = (dateForMarketStatus.getMonth() + 1)
+        //   .toString()
+        //   .padStart(2, '0');
+        // const day = dateForMarketStatus.getDate().toString().padStart(2, '0');
         this.showTabs = true;
-        this.marketStatusString = this.isMarketOpen?.value
-          ? 'Market is Open'
-          : `Market closed on ${year}-${month}-${day} 13:00:00`;
+        // this.marketStatusString = this.isMarketOpen?.value
+        //   ? 'Market is Open'
+        //   : `Market closed on ${year}-${month}-${day} hello 13:00:00`;
         this.isLoading = false;
       }
 
@@ -451,6 +451,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
       hour12: false,
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: 'America/Los_Angeles',
     };
     const dateFormatter = new Intl.DateTimeFormat('en-US', options);
     const [hours, minutes] = dateFormatter.format(date).split(':').map(Number);
@@ -501,16 +502,6 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
       return false;
     }
   }
-
-  // setWatchlistEntry(): void {
-  //   const watchlistJSON = localStorage.getItem('watchlist');
-  //   const watchlist = watchlistJSON ? JSON.parse(watchlistJSON) : [];
-  //   this.isPresentInWatchlist = watchlist?.includes(
-  //     `${this.stockSymbol.toUpperCase()}`
-  //   )
-  //     ? true
-  //     : false;
-  // }
 
   toggleWatchlistEntry(): void {
     if (this.isPresentInWatchlist) {

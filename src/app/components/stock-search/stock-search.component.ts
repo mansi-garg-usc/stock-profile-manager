@@ -281,7 +281,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
     if (!stock) {
       // if(this.exposedCurrentStockSymbol === '' || this.exposedCurrentStockSymbol === null) {}
       // else {
-      this.invalidEntry = true;
+      // this.invalidEntry = true;
       this.isLoaded = true;
       // }
     } else {
@@ -331,13 +331,13 @@ export class StockSearchComponent implements OnInit, OnDestroy {
               //   this.isAutocompleteLoading = false;
               // }
               // this.filteredOptions = of([]);
-            } else if (results.companyInfo === undefined) {
-              this.invalidEntry = true;
-              // this.isAutocompleteLoading = false;
-              this.isLoaded = true;
-              // this.searchResultsDisplayed = false;
-              // this.stockInfo = null;
-              // this.filteredOptions = of([]);
+            // } else if (results.companyInfo === undefined) {
+            //   this.invalidEntry = true;
+            //   // this.isAutocompleteLoading = false;
+            //   this.isLoaded = true;
+            //   // this.searchResultsDisplayed = false;
+            //   // this.stockInfo = null;
+            //   // this.filteredOptions = of([]);
             }
           },
           error: (error: any) => {
