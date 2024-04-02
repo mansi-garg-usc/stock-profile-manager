@@ -34,10 +34,10 @@ export class StockSellModalComponent {
     this.walletSubscription = this.portfolioService.walletMoney.subscribe({
       next: (money) => {
         this.oldWalletMoney = money;
-        console.log(
-          'Wallet Money Updated in buy component:',
-          this.oldWalletMoney
-        );
+        // console.log(
+        //   'Wallet Money Updated in buy component:',
+        //   this.oldWalletMoney
+        // );
       },
       error: (error) => {
         console.error('Error subscribing to walletMoney:', error);
@@ -46,10 +46,10 @@ export class StockSellModalComponent {
         console.log('Completed wallet money subscription.');
       },
     });
-    console.log('Modal initialized');
+    // console.log('Modal initialized');
     if (this.stocksymbol && this.currentPrice) {
-      console.log('Stock Symbol:', this.stocksymbol);
-      console.log('Current Price:', this.currentPrice);
+      // console.log('Stock Symbol:', this.stocksymbol);
+      // console.log('Current Price:', this.currentPrice);
       // console.log('Money in Wallet:', this.moneyInWallet);
       // this.oldWalletMoney = this.moneyInWallet;
       this.currentPortfolioData.some((entry: any) => {
@@ -78,20 +78,20 @@ export class StockSellModalComponent {
   }
 
   sellStock(): void {
-    console.log('Selling stock');
-    console.log(
-      'Current Portfolio Data on sell stock:',
-      this.currentPortfolioData
-    );
+    // console.log('Selling stock');
+    // console.log(
+    //   'Current Portfolio Data on sell stock:',
+    //   this.currentPortfolioData
+    // );
 
     if (
       this.currentPortfolioData[this.stockIndexInPortfolio].quantity ==
       this.quantity
     ) {
-      console.log('Selling stock');
+      // console.log('Selling stock');
       this.portfolioService.removePortfolioRecord(this.stocksymbol).subscribe({
         next: (data) => {
-          console.log('Stock sold');
+          // console.log('Stock sold');
           this.currentPortfolioData = data;
           this.stockIndexInPortfolio = -1;
           this.stockPresentInPortfolio = false;
@@ -125,7 +125,7 @@ export class StockSellModalComponent {
         )
         .subscribe({
           next: (data) => {
-            console.log('Stock sold');
+            // console.log('Stock sold');
             this.currentPortfolioData = data;
             this.stockIndexInPortfolio = -1;
             this.stockPresentInPortfolio = false;

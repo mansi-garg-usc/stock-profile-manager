@@ -182,10 +182,10 @@ export class StockSearchComponent implements OnInit, OnDestroy {
           next: (results) => {
             // Update stockInfo based on new search results
             // this.isLoaded = true;
-            console.log(
-              'exposed search result ke subscriptions se data in stock search component:',
-              results
-            );
+            // console.log(
+            //   'exposed search result ke subscriptions se data in stock search component:',
+            //   results
+            // );
             let extractedResults = this.extractStockInfo(results);
             if (extractedResults && extractedResults.companyInfo !== null) {
               if (
@@ -204,7 +204,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
               // this.isAutocompleteLoading = false;
               // this.isLoaded = true;
             }
-            console.log('Stock Info updated from new search:', this.stockInfo);
+            // console.log('Stock Info updated from new search:', this.stockInfo);
           },
           error: (error) => {
             console.error('Error fetching stock data:', error);
@@ -286,8 +286,8 @@ export class StockSearchComponent implements OnInit, OnDestroy {
       } else {
         stock = event.option.value;
       }
-      console.log('stock', stock);
-      console.log('event', event);
+      // console.log('stock', stock);
+      // console.log('event', event);
     } else if (typeof event === 'string') {
       stock = event;
     } else {
@@ -304,7 +304,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
         this.router.navigate(['/search', stock]);
       }
       this.tickerUrlParam = this.route.snapshot.params['ticker'];
-      console.log('tickerUrlParam', this.tickerUrlParam);
+      // console.log('tickerUrlParam', this.tickerUrlParam);
       this.selectedStockSymbol = stock.toUpperCase();
       this.stockFormControl.setValue(stock, { emitEvent: false });
 

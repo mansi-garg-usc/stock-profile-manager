@@ -1,11 +1,11 @@
 <div class="container mt-3">
     <div class="row">
         <div class="col">
-            <div *ngIf="displaySellAlert" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div *ngIf="displaySellAlert" class="alert alert-danger text-center alert-dismissible fade show" role="alert">
                 {{ symbolSold }} sold successfully.
                 <button type="button" class="btn-close" (click)="displaySellAlert = false"></button>
             </div>
-            <div *ngIf="displayBuyAlert" class="alert alert-success alert-dismissible fade show" role="alert">
+            <div *ngIf="displayBuyAlert" class="alert alert-success text-center alert-dismissible fade show" role="alert">
                 {{ symbolBought }} bought successfully.
                 <button type="button" class="btn-close" (click)="displayBuyAlert = false"></button>
             </div>

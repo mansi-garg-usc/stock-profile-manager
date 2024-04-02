@@ -67,23 +67,23 @@ export class WatchlistComponent {
   }
 
   async fetchWatchlist(): Promise<void> {
-    console.log('Fetching watchlist data...');
-    console.log('watchlist entires', this.watchlistEntries);
+    // console.log('Fetching watchlist data...');
+    // console.log('watchlist entires', this.watchlistEntries);
     // console.log('isloading', this.isLoading);
-    console.log('watchlist info', this.watchlistInfo);
+    // console.log('watchlist info', this.watchlistInfo);
     // this.isLoading = true;
     // this.watchlistInfo = [];
 
-    console.log('watchlist info now', this.watchlistInfo);
+    // console.log('watchlist info now', this.watchlistInfo);
     this.watchlistService.getWatchlistData().subscribe({
       next: (infoArray) => {
-        console.log('watchlist info now', this.watchlistInfo);
+        // console.log('watchlist info now', this.watchlistInfo);
         if (infoArray.length === 0) {
-          console.log('watchlist length is 0');
+          // console.log('watchlist length is 0');
           this.showEmptyWatchlistMessage.next(true);
         } else {
-          console.log('watchlist length is not 0');
-          console.log('Fetched Watchlist Data:', infoArray);
+          // console.log('watchlist length is not 0');
+          // console.log('Fetched Watchlist Data:', infoArray);
           this.watchlistInfo = infoArray;
           this.checkChangePercentage(this.watchlistInfo[0].changePercentage);
         }
@@ -134,9 +134,9 @@ export class WatchlistComponent {
       next: (updatedWatchlist) => {
         this.watchlistInfo = updatedWatchlist;
 
-        console.log(
-          `Removed ${symbol} from watchlist. Fetching updated watchlist data...`
-        );
+        // console.log(
+        //   `Removed ${symbol} from watchlist. Fetching updated watchlist data...`
+        // );
       },
       error: (error) => {
         console.error(`Error removing ${symbol} from watchlist:`, error);

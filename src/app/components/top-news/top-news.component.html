@@ -17,12 +17,12 @@
 <div class="container">
     <div class="row">
         <div class="col-12 col-md-6" *ngFor="let newsItem of news">
-            <div class="card m-3 news-card" data-toggle="modal" data-target="#buyportModel">
-                <div class="card-body mt-3" style="cursor: pointer;" (click)="openNewsModal(newsItem.url)">
-                    <div class="row p-2 align-items-center justify-content-center">
-                        <div class="col-8 col-md-4">
-                            <img class="card-img mx-auto d-block img-fluid rounded" src="{{ newsItem.image }}"
-                            style="object-fit: cover; width: 100%; height: auto; max-height: 5rem;"  alt="News card" />
+            <div class="card mt-3 news-card bg-light" data-toggle="modal" data-target="#buyportModel">
+                <div class="card-body" style="cursor: pointer;" (click)="openNewsModal(newsItem.url)">
+                    <div class="row align-items-center justify-content-center">
+                        <div class="col-12 col-md-4">
+                            <img class="card-img d-block img-fluid rounded" src="{{ newsItem.image }}"
+                                style="object-fit: cover; height: 7rem; width: 100%;" alt="News card" />
                         </div>
                         <div class="col-md-8 col-12  card-body py-auto">
                             <p class="m-0 truncate-text align-center text-center card-title"> {{newsItem.headline}}

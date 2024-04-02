@@ -344,34 +344,31 @@ export class StockSearchService {
 
   startPeriodicUpdate(stockSymbol: string) {
     console.log('Starting periodic update for', stockSymbol);
-    // Clear existing interval to avoid multiple intervals running simultaneously
     if (this.updateInterval) {
       clearInterval(this.updateInterval);
     }
 
-    // Set up a new interval
     this.updateInterval = window.setInterval(() => {
       this.fetchStockPriceDetails(stockSymbol).subscribe({
         next: (response) => {
           const currentSearchResult = this.searchResult.value;
           const updatedSearchResult = {
             ...currentSearchResult,
-            stockPriceDetails: response, // Update the stockPriceDetails with the new response
+            stockPriceDetails: response,
           };
           this.searchResult.next(updatedSearchResult);
 
           console.log('Data updated', response);
-          // Handle the response if needed
         },
         error: (error) => console.error('Error updating data:', error),
       });
-    }, 15000); // 15 seconds interval
+    }, 15000);
   }
 
   stopPeriodicUpdate() {
     if (this.updateInterval) {
       clearInterval(this.updateInterval);
-      this.updateInterval = undefined; // Reset the interval reference
+      this.updateInterval = undefined;
     }
   }
 

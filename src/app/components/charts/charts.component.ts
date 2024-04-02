@@ -61,7 +61,7 @@ export class ChartsComponent {
     //   ]);
     // });
 
-    console.log('OHLC Data:', ohlc);
+    // console.log('OHLC Data:', ohlc);
 
     return ohlc;
   }
@@ -87,13 +87,13 @@ export class ChartsComponent {
         chartsData.results[i].c,
       ]);
     }
-    console.log('ohlc', ohlc);
+    // console.log('ohlc', ohlc);
 
     // var maxVol = 0;
     for (let i = 0; i < chartsData.resultsCount; i++) {
       volume.push([chartsData.results[i].t, chartsData.results[i].v]);
     }
-    console.log('volume', volume);
+    // console.log('volume', volume);
 
     this.chartOptions = {
       rangeSelector: {
@@ -146,6 +146,9 @@ export class ChartsComponent {
 
       subtitle: {
         text: 'With SMA and Volume by Price technical indicators',
+      },
+      chart: {
+        backgroundColor: '#f0f0f0',
       },
 
       yAxis: [

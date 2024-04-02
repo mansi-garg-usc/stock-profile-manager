@@ -31,10 +31,10 @@ export class StockBuyModalComponent {
     this.walletSubscription = this.portfolioService.walletMoney.subscribe({
       next: (money) => {
         this.oldWalletMoney = money;
-        console.log(
-          'Wallet Money Updated in buy component:',
-          this.oldWalletMoney
-        );
+        // console.log(
+        //   'Wallet Money Updated in buy component:',
+        //   this.oldWalletMoney
+        // );
       },
       error: (error) => {
         console.error('Error subscribing to walletMoney:', error);
@@ -45,9 +45,9 @@ export class StockBuyModalComponent {
     });
     console.log('Modal initialized');
     if (this.stocksymbol && this.currentPrice && this.oldWalletMoney) {
-      console.log('Stock Symbol:', this.stocksymbol);
-      console.log('Current Price:', this.currentPrice);
-      console.log('Money in Wallet:', this.oldWalletMoney);
+      // console.log('Stock Symbol:', this.stocksymbol);
+      // console.log('Current Price:', this.currentPrice);
+      // console.log('Money in Wallet:', this.oldWalletMoney);
 
       this.currentPortfolioData?.some((entry: any) => {
         if (
@@ -69,7 +69,7 @@ export class StockBuyModalComponent {
   }
 
   buyStock(): void {
-    console.log('Buying stock');
+    // console.log('Buying stock');
     if (!this.notEnoughMoneyError) {
       if (this.stockPresentInPortfolio) {
         let totalquantityafterbuy =
@@ -92,7 +92,7 @@ export class StockBuyModalComponent {
           .subscribe({
             next: (data) => {
               this.currentPortfolioData = data;
-              console.log('Portfolio updated:', data);
+              // console.log('Portfolio updated:', data);
               this.stockIndexInPortfolio = -1;
               this.stockPresentInPortfolio = false;
               this.activeModal.close(data);
@@ -116,7 +116,7 @@ export class StockBuyModalComponent {
               this.currentPortfolioData = data;
               this.stockIndexInPortfolio = -1;
               this.stockPresentInPortfolio = false;
-              console.log('Portfolio updated:', data);
+              // console.log('Portfolio updated:', data);
               //TODO: update wallet
               this.activeModal.close(data);
 

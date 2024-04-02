@@ -39,7 +39,6 @@ export class AppComponent {
   constructor(private router: Router) {
     this.router.events
       .pipe(
-        // Use 'filter' to allow only RouterEvent instances
         filter(
           (event: any): event is RouterEvent =>
             event instanceof NavigationStart ||
@@ -50,13 +49,13 @@ export class AppComponent {
       )
       .subscribe((event: RouterEvent) => {
         if (event instanceof NavigationStart) {
-          console.log('Navigation Start:', event);
+          // console.log('Navigation Start:', event);
         } else if (event instanceof NavigationEnd) {
-          console.log('Navigation End:', event.url);
+          // console.log('Navigation End:', event.url);
         } else if (event instanceof NavigationCancel) {
-          console.log('Navigation Cancel:', event);
+          // console.log('Navigation Cancel:', event);
         } else if (event instanceof NavigationError) {
-          console.log('Navigation Error:', event);
+          // console.log('Navigation Error:', event);
         }
       });
   }

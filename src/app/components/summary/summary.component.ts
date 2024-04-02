@@ -44,7 +44,7 @@ export class SummaryComponent {
   ) {}
 
   ngOnInit() {
-    console.log('Stock Info in summary component:', this.stockInfo);
+    // console.log('Stock Info in summary component:', this.stockInfo);
     this.subscription.add(
       this.stockInfo$.subscribe((data) => {
         this.stockInfo = data;
@@ -86,14 +86,14 @@ export class SummaryComponent {
 
   showSummaryChart() {
     var data = [];
-    console.log(this.stockInfo.summaryChart.resultsCount);
+    // console.log(this.stockInfo.summaryChart.resultsCount);
     for (let i = 0; i < this.stockInfo.summaryChart.resultsCount; i++) {
       data.push([
         this.stockInfo.summaryChart.results[i].t,
         this.stockInfo.summaryChart.results[i].c,
       ]);
     }
-    console.log(data);
+    // console.log(data);
 
     this.chartOptions = {
       chart: {

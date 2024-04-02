@@ -63,13 +63,13 @@ export class InsightsComponent implements OnInit, OnDestroy {
   }
 
   getInsights() {
-    console.log('Earnings');
+    // console.log('Earnings');
     this.earningSubscription.add(
       this.stockSearchService.fetchEearnings().subscribe({
         next: (results) => {
           this.earnings = results;
           this.setSplineData(this.earnings);
-          console.log('Earnings' + this.earnings);
+          // console.log('Earnings' + this.earnings);
         },
         error: (error) => {
           console.error('Error fetching earnings:', error);
@@ -83,7 +83,7 @@ export class InsightsComponent implements OnInit, OnDestroy {
         next: (results) => {
           this.trends = results;
           this.setBarData(this.trends);
-          console.log(this.trends);
+          // console.log(this.trends);
         },
         error: (error) => {
           console.error('Error fetching trends:', error);
@@ -97,7 +97,7 @@ export class InsightsComponent implements OnInit, OnDestroy {
         next: (results) => {
           this.sentiments = results?.data;
           this.setAggregates(this.sentiments);
-          console.log('Fetched sentiments:', this.sentiments);
+          // console.log('Fetched sentiments:', this.sentiments);
         },
         error: (error) => {
           console.error('Error fetching sentiments:', error);
@@ -172,7 +172,7 @@ export class InsightsComponent implements OnInit, OnDestroy {
       this.splineData.yactual.push(item.actual);
       this.splineData.yestimate.push(item.estimate);
 
-      console.log('SetSplineData:', this.splineData);
+      // console.log('SetSplineData:', this.splineData);
     }
     this.createSplineChart();
   }
@@ -191,7 +191,7 @@ export class InsightsComponent implements OnInit, OnDestroy {
       this.barData.sb.push(item.strongBuy);
       this.barData.labels.push(item.period);
 
-      console.log('SetSplineData:', this.splineData);
+      // console.log('SetSplineData:', this.splineData);
     }
     this.createTrends();
   }

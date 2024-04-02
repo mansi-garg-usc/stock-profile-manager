@@ -64,6 +64,7 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
   displayDetails = false;
   cachedWatchlistData: any = null;
   cachedPortfolioData: any = null;
+  private updateDateInterval: any;
 
   public showTabs: boolean = false;
   private subscription: Subscription = new Subscription();
@@ -182,6 +183,10 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
           );
         }
       );
+
+    this.updateDateInterval = setInterval(() => {
+      this.currentDateFormatted = this.formatTodayDate(new Date());
+    }, 15000);
   }
 
   handleSearchResults(results: any) {
@@ -377,6 +382,9 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
       this.watchlistSubscription.unsubscribe();
     }
     this.stockSearchService.stopPeriodicUpdate();
+    if (this.updateDateInterval) {
+      clearInterval(this.updateDateInterval);
+    }
     // this.stockInfo = undefined;
   }
 
@@ -579,14 +587,14 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
         this.isPresentInPortfolio = portfolioData.some(
           (entry: any) => entry?.stocksymbol === this.stockSymbol.toUpperCase()
         );
-        console.log(
-          'Portfolio data from load portfolio in details component:',
-          this.portfolioData
-        );
-        console.log(
-          'Is present in portfolio in details component:',
-          this.isPresentInPortfolio
-        );
+        // console.log(
+        //   'Portfolio data from load portfolio in details component:',
+        //   this.portfolioData
+        // );
+        // console.log(
+        //   'Is present in portfolio in details component:',
+        //   this.isPresentInPortfolio
+        // );
       },
       error: (error: any) => {
         console.error('Error loading portfolio:', error);
@@ -603,6 +611,6 @@ export class StockDetailsComponent implements OnInit, OnDestroy {
     //   console.log(`Removed ${ticker} from watchlist`);
     // }
     // this.isPresentInWatchlist = false;
-    console.log('Remove from watchlist ckicked for :', ticker);
+    // console.log('Remove from watchlist ckicked for :', ticker);
   }
 }
