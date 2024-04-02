@@ -137,7 +137,7 @@ export class StockSearchComponent implements OnInit, OnDestroy {
       debounceTime(100),
       tap((value) => console.log('After debounceTime:', value)),
       distinctUntilChanged(),
-      filter((term) => term && term.length > 1),
+      filter((term) => term && term.length > 0),
       tap((term) => console.log('After filter:', term)),
       switchMap((term) => {
         this.isAutocompleteLoading = true;
