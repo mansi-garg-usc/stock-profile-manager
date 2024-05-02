@@ -47,8 +47,8 @@ let portfolio: any;
 let wallet: any;
 
 const app = express();
-const finnhub_api_key = 'cnih581r01qj1g5q4jlgcnih581r01qj1g5q4jm0';
-const polygon_api_key = 'fP1uPp6FRhYiEw1L7u9Z_XcgMoQDkuFc';
+const finnhub_api_key = 'cooljthr01qtvljfnlogcooljthr01qtvljfnlp0';
+const polygon_api_key = 'zbPiA0PFBc6p5QxHiZZR0540YL5QXRA1';
 const port = process.env['PORT'] || 8000;
 app.set('trust proxy', true);
 
@@ -74,9 +74,9 @@ function formatDate(dateToBeFormatted: Date) {
 
 async function startServer() {
   const apiKeys = [
-    'fP1uPp6FRhYiEw1L7u9Z_XcgMoQDkuFc',
-    'PWkaPl2Z5G3CNFVY9qr7sivNGZyEKEAY',
-    'AnjpX_saVqazmlRPU7qYBGJCSJuuwNb8',
+    'gS_lPGmLT6jeABWANAGpzYbb1YEjcEyJ',
+    'ByNfAzLYzFraiBq4QXZ2OhzUEwjYlAkP',
+    'i_EB9IZffpFjmGBKpe64R31chCznEgVX',
   ]; // Replace these with your actual API keys
   const apiKeyRotator = new ApiKeyRotator(apiKeys);
   try {
@@ -423,10 +423,19 @@ async function startServer() {
       try {
         // await client.connect();
         const session = client.startSession();
+        const stocksymbol = req.query['symbol'];
+        const quantityString = req.query['stockquantity'];
+        const costString = req.query['price'];
+
+    if (typeof stocksymbol !== 'string' || typeof quantityString !== 'string' || typeof costString !== 'string') {
+      throw new Error('Symbol, quantity, and price must be valid strings.');
+    }
+        const quantity = parseFloat(quantityString);
+        const cost = parseFloat(costString);
         const portfolioResponse = await portfolio.insertOne({
           stocksymbol: req.query['symbol'],
-          quantity: req.query['stockquantity'],
-          cost: req.query['price'],
+          quantity: quantity,
+          cost: cost,
         });
         console.log('Added to portfolio:', portfolioResponse);
         const portfolioData = await portfolio.find({}).toArray();
@@ -472,11 +481,20 @@ async function startServer() {
 
     app.get('/api/updateportfoliorecord', async (req, res) => {
       try {
-        const tickerSymbol = req.query['symbol'];
-        const quantity = req.query['stockquantity'];
-        const cost = req.query['price'];
+        // const tickerSymbol = req.query['symbol'];
+        // const quantity = req.query['stockquantity'];
+        // const cost = req.query['price'];
         // await client.connect();
         const session = client.startSession();
+        const tickerSymbol = req.query['symbol'];
+        const quantityString = req.query['stockquantity'];
+        const costString = req.query['price'];
+
+        if (typeof tickerSymbol !== 'string' || typeof quantityString !== 'string' || typeof costString !== 'string') {
+          throw new Error('Symbol, quantity, and price must be valid strings.');
+        }
+        const quantity = parseFloat(quantityString);
+        const cost = parseFloat(costString);
         const portfolioResponse = await portfolio.updateOne(
           { stocksymbol: tickerSymbol },
           { $set: { quantity: quantity, cost: cost } }
